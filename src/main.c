@@ -65,6 +65,15 @@ typedef struct {
     int x, y, w, h;
 } SrcRect;
 
+typedef enum {
+    TUNE_IDLE,
+    TUNE_WALK,
+    TUNE_JUMP,
+    TUNE_SLASH,
+    TUNE_DASH,
+    TUNE_COUNT
+} TuneAnim;
+
 static const char *map_rows[MAP_H] = {
     "................................................................................................",
     "................................................................................................",
@@ -118,6 +127,14 @@ static const SrcRect HERO_IDLE_FRAMES[] = {
     { 732, 30, 220, 260 },
     { 1060, 30, 220, 260 },
 };
+static const SrcRect HERO_IDLE_BREATH_FRAMES[] = {
+    { 0, 110, 362, 470 },
+    { 362, 110, 362, 470 },
+    { 724, 110, 362, 470 },
+    { 1086, 110, 362, 470 },
+    { 1448, 110, 362, 470 },
+    { 1810, 110, 362, 470 },
+};
 static const SrcRect HERO_WALK_FRAMES[] = {
     { 44, 305, 215, 260 },
     { 272, 305, 215, 260 },
@@ -151,6 +168,62 @@ static const SrcRect HERO_SLASH_FRAMES[] = {
     { 1065, 842, 270, 235 },
 };
 
+static const float DEFAULT_IDLE_DRAW_W[] = { 42.0f, 42.0f, 42.0f, 42.0f, 36.5f, 42.0f };
+static const float DEFAULT_IDLE_DRAW_H[] = { 54.0f, 54.0f, 54.0f, 54.0f, 54.0f, 54.0f };
+static const float DEFAULT_IDLE_OX[] = { 20.9f, 18.6f, 17.5f, 16.2f, 16.4f, 15.2f };
+static const float DEFAULT_IDLE_OY[] = { 54.0f, 54.0f, 54.0f, 54.0f, 54.0f, 54.0f };
+static const int DEFAULT_IDLE_SRC_W[] = { 362, 362, 362, 362, 315, 362 };
+
+static const int DEFAULT_WALK_SRC_W[] = { 217, 217, 217, 217, 217, 217, 217, 217, 195, 217 };
+static const float DEFAULT_WALK_DRAW_W[] = { 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f * (195.0f / 217.0f), 49.0f };
+static const float DEFAULT_WALK_DRAW_H[] = { 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f };
+static const float DEFAULT_WALK_OX[] = { 25.3f, 23.2f, 23.3f, 23.3f, 23.0f, 24.7f, 23.2f, 23.2f, 20.8f, 20.0f };
+static const float DEFAULT_WALK_OY[] = { 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f };
+
+static const float DEFAULT_JUMP_DRAW_W[] = { 54.0f, 61.0f, 61.0f, 61.0f };
+static const float DEFAULT_JUMP_DRAW_H[] = { 51.0f, 58.0f, 58.0f, 55.0f };
+static const float DEFAULT_JUMP_OX[] = { 26.0f, 22.3f, 31.2f, 15.7f };
+static const float DEFAULT_JUMP_OY[] = { 49.0f, 55.0f, 55.0f, 53.0f };
+
+static const float DEFAULT_SLASH_DRAW_W[] = { 58.0f, 74.0f, 80.2f, 58.0f };
+static const float DEFAULT_SLASH_DRAW_H[] = { 57.0f, 57.0f, 60.0f, 57.0f };
+static const float DEFAULT_SLASH_OX[] = { 23.0f, 23.0f, 23.0f, 23.0f };
+static const float DEFAULT_SLASH_OY[] = { 55.0f, 55.0f, 55.0f, 55.0f };
+static const int DEFAULT_SLASH_SRC_W[] = { 245, 320, 370, 270 };
+
+static const float DEFAULT_DASH_DRAW_W[] = { 61.0f };
+static const float DEFAULT_DASH_DRAW_H[] = { 58.0f };
+static const float DEFAULT_DASH_OX[] = { 22.3f };
+static const float DEFAULT_DASH_OY[] = { 55.0f };
+
+static float idle_draw_w[] = { 42.0f, 42.0f, 42.0f, 42.0f, 36.5f, 42.0f };
+static float idle_draw_h[] = { 54.0f, 54.0f, 54.0f, 54.0f, 54.0f, 54.0f };
+static float idle_ox[] = { 20.9f, 18.6f, 17.5f, 16.2f, 16.4f, 15.2f };
+static float idle_oy[] = { 54.0f, 54.0f, 54.0f, 54.0f, 54.0f, 54.0f };
+static int idle_src_w[] = { 362, 362, 362, 362, 315, 362 };
+
+static int walk_src_w[] = { 217, 217, 217, 217, 217, 217, 217, 217, 195, 217 };
+static float walk_draw_w[] = { 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f * (195.0f / 217.0f), 49.0f };
+static float walk_draw_h[] = { 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f };
+static float walk_ox[] = { 25.3f, 23.2f, 23.3f, 23.3f, 23.0f, 24.7f, 23.2f, 23.2f, 20.8f, 20.0f };
+static float walk_oy[] = { 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f };
+
+static float jump_draw_w[] = { 54.0f, 61.0f, 61.0f, 61.0f };
+static float jump_draw_h[] = { 51.0f, 58.0f, 58.0f, 55.0f };
+static float jump_ox[] = { 26.0f, 22.3f, 31.2f, 15.7f };
+static float jump_oy[] = { 49.0f, 55.0f, 55.0f, 53.0f };
+
+static float slash_draw_w[] = { 58.0f, 74.0f, 80.2f, 58.0f };
+static float slash_draw_h[] = { 57.0f, 57.0f, 60.0f, 57.0f };
+static float slash_ox[] = { 23.0f, 23.0f, 23.0f, 23.0f };
+static float slash_oy[] = { 55.0f, 55.0f, 55.0f, 55.0f };
+static int slash_src_w[] = { 245, 320, 370, 270 };
+
+static float dash_draw_w[] = { 61.0f };
+static float dash_draw_h[] = { 58.0f };
+static float dash_ox[] = { 22.3f };
+static float dash_oy[] = { 55.0f };
+
 static bool keys[256];
 static bool special_keys[256];
 static bool prev_jump_down;
@@ -163,6 +236,9 @@ static int last_time_ms;
 static int sim_frame;
 static int capture_frame;
 static int forced_walk_frame = -1;
+static int forced_idle_frame = -1;
+static int forced_jump_frame = -1;
+static int forced_facing;
 static const char *capture_script;
 static const char *telemetry_path;
 static FILE *telemetry_file;
@@ -170,11 +246,15 @@ static float accumulator;
 static Texture background_texture;
 static Texture foreground_texture;
 static Texture player_texture;
+static Texture idle_texture;
 static Texture walk_texture;
 static Texture midground_texture;
 static bool captured_frame;
 static bool player_interacted;
 static bool isolate_player;
+static bool tune_mode;
+static TuneAnim tune_anim = TUNE_IDLE;
+static int tune_frame;
 
 static void color(Color c)
 {
@@ -275,6 +355,11 @@ static void texture_full_crop(Texture *texture, float x, float y, float w, float
     glVertex2f(x, y + h);
     glEnd();
     glDisable(GL_TEXTURE_2D);
+}
+
+static float draw_ox_for_facing(float draw_w, float ox, int facing)
+{
+    return facing < 0 ? draw_w - ox : ox;
 }
 
 #ifdef __APPLE__
@@ -643,7 +728,9 @@ static void update(float dt)
     player.landing_timer = fmaxf(0, player.landing_timer - dt);
 
     int axis = input_axis();
-    if (axis != 0 && player.backdash_timer <= 0.0f) {
+    if (forced_facing) {
+        player.facing = forced_facing;
+    } else if (axis != 0 && player.backdash_timer <= 0.0f) {
         player.facing = axis;
     }
 
@@ -747,6 +834,273 @@ static void draw_text(float x, float y, const char *text, Color c)
     for (const char *p = text; *p; ++p) {
         glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *p);
     }
+}
+
+static int tune_frame_count(TuneAnim anim)
+{
+    switch (anim) {
+        case TUNE_IDLE: return 6;
+        case TUNE_WALK: return 10;
+        case TUNE_JUMP: return 4;
+        case TUNE_SLASH: return 4;
+        case TUNE_DASH: return 1;
+        default: return 1;
+    }
+}
+
+static const char *tune_anim_name(TuneAnim anim)
+{
+    switch (anim) {
+        case TUNE_IDLE: return "idle";
+        case TUNE_WALK: return "walk";
+        case TUNE_JUMP: return "jump";
+        case TUNE_SLASH: return "slash";
+        case TUNE_DASH: return "dash";
+        default: return "unknown";
+    }
+}
+
+static TuneAnim tune_anim_from_name(const char *name)
+{
+    if (!name) {
+        return tune_anim;
+    }
+    if (strcmp(name, "idle") == 0) {
+        return TUNE_IDLE;
+    }
+    if (strcmp(name, "walk") == 0) {
+        return TUNE_WALK;
+    }
+    if (strcmp(name, "jump") == 0) {
+        return TUNE_JUMP;
+    }
+    if (strcmp(name, "slash") == 0 || strcmp(name, "attack") == 0) {
+        return TUNE_SLASH;
+    }
+    if (strcmp(name, "dash") == 0) {
+        return TUNE_DASH;
+    }
+    return tune_anim;
+}
+
+static void tune_active_pose(float **draw_w, float **draw_h, float **ox, float **oy)
+{
+    int f = tune_frame % tune_frame_count(tune_anim);
+    switch (tune_anim) {
+        case TUNE_IDLE:
+            *draw_w = &idle_draw_w[f];
+            *draw_h = &idle_draw_h[f];
+            *ox = &idle_ox[f];
+            *oy = &idle_oy[f];
+            break;
+        case TUNE_WALK:
+            *draw_w = &walk_draw_w[f];
+            *draw_h = &walk_draw_h[f];
+            *ox = &walk_ox[f];
+            *oy = &walk_oy[f];
+            break;
+        case TUNE_JUMP:
+            *draw_w = &jump_draw_w[f];
+            *draw_h = &jump_draw_h[f];
+            *ox = &jump_ox[f];
+            *oy = &jump_oy[f];
+            break;
+        case TUNE_SLASH:
+            *draw_w = &slash_draw_w[f];
+            *draw_h = &slash_draw_h[f];
+            *ox = &slash_ox[f];
+            *oy = &slash_oy[f];
+            break;
+        case TUNE_DASH:
+            *draw_w = &dash_draw_w[0];
+            *draw_h = &dash_draw_h[0];
+            *ox = &dash_ox[0];
+            *oy = &dash_oy[0];
+            break;
+        default:
+            *draw_w = &idle_draw_w[0];
+            *draw_h = &idle_draw_h[0];
+            *ox = &idle_ox[0];
+            *oy = &idle_oy[0];
+            break;
+    }
+}
+
+static int *tune_active_src_w(void)
+{
+    int f = tune_frame % tune_frame_count(tune_anim);
+    if (tune_anim == TUNE_IDLE) {
+        return &idle_src_w[f];
+    }
+    if (tune_anim == TUNE_WALK) {
+        return &walk_src_w[f];
+    }
+    if (tune_anim == TUNE_SLASH) {
+        return &slash_src_w[f];
+    }
+    return NULL;
+}
+
+static void dump_float_table(const char *name, float *values, int count)
+{
+    fprintf(stderr, "static float %s[] = { ", name);
+    for (int i = 0; i < count; ++i) {
+        fprintf(stderr, "%.1ff%s", values[i], i == count - 1 ? " " : ", ");
+    }
+    fprintf(stderr, "};\n");
+}
+
+static void dump_int_table(const char *name, int *values, int count)
+{
+    fprintf(stderr, "static int %s[] = { ", name);
+    for (int i = 0; i < count; ++i) {
+        fprintf(stderr, "%d%s", values[i], i == count - 1 ? " " : ", ");
+    }
+    fprintf(stderr, "};\n");
+}
+
+static void dump_tune_tables(void)
+{
+    fprintf(stderr, "\n--- pilgrim animation tuning tables ---\n");
+    dump_float_table("idle_draw_w", idle_draw_w, 6);
+    dump_float_table("idle_draw_h", idle_draw_h, 6);
+    dump_float_table("idle_ox", idle_ox, 6);
+    dump_float_table("idle_oy", idle_oy, 6);
+    dump_int_table("idle_src_w", idle_src_w, 6);
+    dump_int_table("walk_src_w", walk_src_w, 10);
+    dump_float_table("walk_draw_w", walk_draw_w, 10);
+    dump_float_table("walk_draw_h", walk_draw_h, 10);
+    dump_float_table("walk_ox", walk_ox, 10);
+    dump_float_table("walk_oy", walk_oy, 10);
+    dump_float_table("jump_draw_w", jump_draw_w, 4);
+    dump_float_table("jump_draw_h", jump_draw_h, 4);
+    dump_float_table("jump_ox", jump_ox, 4);
+    dump_float_table("jump_oy", jump_oy, 4);
+    dump_float_table("slash_draw_w", slash_draw_w, 4);
+    dump_float_table("slash_draw_h", slash_draw_h, 4);
+    dump_float_table("slash_ox", slash_ox, 4);
+    dump_float_table("slash_oy", slash_oy, 4);
+    dump_int_table("slash_src_w", slash_src_w, 4);
+    dump_float_table("dash_draw_w", dash_draw_w, 1);
+    dump_float_table("dash_draw_h", dash_draw_h, 1);
+    dump_float_table("dash_ox", dash_ox, 1);
+    dump_float_table("dash_oy", dash_oy, 1);
+    fprintf(stderr, "--- end pilgrim animation tuning tables ---\n\n");
+}
+
+static void reset_tune_frame(void)
+{
+    int f = tune_frame % tune_frame_count(tune_anim);
+    switch (tune_anim) {
+        case TUNE_IDLE:
+            idle_draw_w[f] = DEFAULT_IDLE_DRAW_W[f];
+            idle_draw_h[f] = DEFAULT_IDLE_DRAW_H[f];
+            idle_ox[f] = DEFAULT_IDLE_OX[f];
+            idle_oy[f] = DEFAULT_IDLE_OY[f];
+            idle_src_w[f] = DEFAULT_IDLE_SRC_W[f];
+            break;
+        case TUNE_WALK:
+            walk_src_w[f] = DEFAULT_WALK_SRC_W[f];
+            walk_draw_w[f] = DEFAULT_WALK_DRAW_W[f];
+            walk_draw_h[f] = DEFAULT_WALK_DRAW_H[f];
+            walk_ox[f] = DEFAULT_WALK_OX[f];
+            walk_oy[f] = DEFAULT_WALK_OY[f];
+            break;
+        case TUNE_JUMP:
+            jump_draw_w[f] = DEFAULT_JUMP_DRAW_W[f];
+            jump_draw_h[f] = DEFAULT_JUMP_DRAW_H[f];
+            jump_ox[f] = DEFAULT_JUMP_OX[f];
+            jump_oy[f] = DEFAULT_JUMP_OY[f];
+            break;
+        case TUNE_SLASH:
+            slash_draw_w[f] = DEFAULT_SLASH_DRAW_W[f];
+            slash_draw_h[f] = DEFAULT_SLASH_DRAW_H[f];
+            slash_ox[f] = DEFAULT_SLASH_OX[f];
+            slash_oy[f] = DEFAULT_SLASH_OY[f];
+            slash_src_w[f] = DEFAULT_SLASH_SRC_W[f];
+            break;
+        case TUNE_DASH:
+            dash_draw_w[0] = DEFAULT_DASH_DRAW_W[0];
+            dash_draw_h[0] = DEFAULT_DASH_DRAW_H[0];
+            dash_ox[0] = DEFAULT_DASH_OX[0];
+            dash_oy[0] = DEFAULT_DASH_OY[0];
+            break;
+        default:
+            break;
+    }
+}
+
+static void draw_tune_player(void)
+{
+    int f = tune_frame % tune_frame_count(tune_anim);
+    Texture *texture = &player_texture;
+    SrcRect src = HERO_IDLE_FRAMES[1];
+    float *draw_w;
+    float *draw_h;
+    float *ox;
+    float *oy;
+    tune_active_pose(&draw_w, &draw_h, &ox, &oy);
+
+    switch (tune_anim) {
+        case TUNE_IDLE:
+            texture = idle_texture.ready ? &idle_texture : &player_texture;
+            src = idle_texture.ready ? HERO_IDLE_BREATH_FRAMES[f] : HERO_IDLE_FRAMES[f % 4];
+            if (idle_texture.ready) {
+                src.w = idle_src_w[f];
+            }
+            break;
+        case TUNE_WALK:
+            texture = walk_texture.ready ? &walk_texture : &player_texture;
+            src = walk_texture.ready ? HERO_WALK_SMOOTH_FRAMES[f] : HERO_WALK_FRAMES[f % 6];
+            if (walk_texture.ready) {
+                src.w = walk_src_w[f];
+            }
+            break;
+        case TUNE_JUMP:
+            src = HERO_JUMP_FRAMES[f];
+            break;
+        case TUNE_SLASH:
+            src = HERO_SLASH_FRAMES[f];
+            src.w = slash_src_w[f];
+            break;
+        case TUNE_DASH:
+            src = HERO_JUMP_FRAMES[1];
+            break;
+        default:
+            break;
+    }
+
+    rect_alpha(player.x + 4.0f, player.y - 16.0f, 2.0f, 88.0f, (Color){ 85, 120, 155 }, 120);
+    rect_alpha(player.x - 43.0f, player.y + 27.0f, 96.0f, 2.0f, (Color){ 155, 120, 85 }, 120);
+    texture_src(texture, src, player.x + 5.0f - *ox, player.y + 28.0f - *oy, *draw_w, *draw_h, false);
+}
+
+static void draw_tune_overlay(void)
+{
+    char buffer[160];
+    float *draw_w;
+    float *draw_h;
+    float *ox;
+    float *oy;
+    int *src_w;
+    tune_active_pose(&draw_w, &draw_h, &ox, &oy);
+    src_w = tune_active_src_w();
+
+    glPushMatrix();
+    glLoadIdentity();
+    rect_alpha(5, 5, 310, 86, (Color){ 4, 5, 9 }, 210);
+    snprintf(buffer, sizeof(buffer), "TUNE %s frame %d/%d", tune_anim_name(tune_anim), tune_frame + 1, tune_frame_count(tune_anim));
+    draw_text(10, 18, buffer, (Color){ 244, 224, 172 });
+    snprintf(buffer, sizeof(buffer), "w %.1f  h %.1f  ox %.1f  oy %.1f", *draw_w, *draw_h, *ox, *oy);
+    draw_text(10, 32, buffer, (Color){ 210, 220, 226 });
+    if (src_w) {
+        snprintf(buffer, sizeof(buffer), "src_w %d", *src_w);
+        draw_text(232, 32, buffer, (Color){ 176, 206, 190 });
+    }
+    draw_text(10, 46, "1-5 anim  [/] frame  arrows nudge", (Color){ 150, 160, 170 });
+    draw_text(10, 60, "+/- scale  Z/X width  C/V height", (Color){ 150, 160, 170 });
+    draw_text(10, 74, "Q/E crop  O reset current frame  P dump", (Color){ 150, 160, 170 });
+    glPopMatrix();
 }
 
 static void draw_asset_background(void)
@@ -978,9 +1332,30 @@ static void draw_player(void)
         float draw_h = 59.0f;
         float ox = 22.0f;
         float oy = 56.0f;
-        float draw_y_offset = sinf(player.anim_time * 4.2f) * 0.45f;
+        Texture *draw_texture = &player_texture;
+        float draw_y_offset = 0.0f;
 
-        if (player.attack_timer > 0.0f) {
+        if (idle_texture.ready) {
+            int f = forced_idle_frame >= 0 ? forced_idle_frame % 6 : ((int)(player.anim_time / 0.22f)) % 6;
+            src = HERO_IDLE_BREATH_FRAMES[f];
+            src.w = idle_src_w[f];
+            draw_texture = &idle_texture;
+            draw_w = idle_draw_w[f];
+            draw_h = idle_draw_h[f];
+            ox = idle_ox[f];
+            oy = idle_oy[f];
+        }
+
+        if (forced_jump_frame >= 0) {
+            int f = forced_jump_frame % 4;
+            src = HERO_JUMP_FRAMES[f];
+            draw_texture = &player_texture;
+            draw_w = jump_draw_w[f];
+            draw_h = jump_draw_h[f];
+            ox = jump_ox[f];
+            oy = jump_oy[f];
+            draw_y_offset = 0.0f;
+        } else if (player.attack_timer > 0.0f) {
             int f = (int)(player.attack_age / 0.085f);
             if (f < 0) {
                 f = 0;
@@ -989,17 +1364,20 @@ static void draw_player(void)
                 f = 3;
             }
             src = HERO_SLASH_FRAMES[f];
-            draw_w = f == 2 ? 91.0f : (f == 1 ? 74.0f : 58.0f);
-            draw_h = f == 2 ? 60.0f : 57.0f;
-            ox = player.facing > 0 ? 23.0f : draw_w - 24.0f;
-            oy = 55.0f;
+            src.w = slash_src_w[f];
+            draw_texture = &player_texture;
+            draw_w = slash_draw_w[f];
+            draw_h = slash_draw_h[f];
+            ox = slash_ox[f];
+            oy = slash_oy[f];
             draw_y_offset = 0.0f;
         } else if (player.landing_timer > 0.0f) {
             src = HERO_JUMP_FRAMES[3];
-            draw_w = 61.0f;
-            draw_h = 55.0f;
-            ox = 28.0f;
-            oy = 53.0f;
+            draw_texture = &player_texture;
+            draw_w = jump_draw_w[3];
+            draw_h = jump_draw_h[3];
+            ox = jump_ox[3];
+            oy = jump_oy[3];
             draw_y_offset = 0.0f;
         } else if (!player.grounded) {
             int f = 0;
@@ -1011,21 +1389,30 @@ static void draw_player(void)
                 f = 3;
             }
             src = HERO_JUMP_FRAMES[f];
-            draw_w = f == 0 ? 54.0f : 61.0f;
-            draw_h = f == 0 ? 51.0f : (f == 3 ? 55.0f : 58.0f);
-            ox = f == 3 ? 28.0f : 26.0f;
-            oy = f == 0 ? 49.0f : (f == 3 ? 53.0f : 55.0f);
+            draw_texture = &player_texture;
+            draw_w = jump_draw_w[f];
+            draw_h = jump_draw_h[f];
+            ox = jump_ox[f];
+            oy = jump_oy[f];
+            draw_y_offset = 0.0f;
+        } else if (player.backdash_timer > 0.0f) {
+            src = HERO_JUMP_FRAMES[1];
+            draw_texture = &player_texture;
+            draw_w = dash_draw_w[0];
+            draw_h = dash_draw_h[0];
+            ox = dash_ox[0];
+            oy = dash_oy[0];
             draw_y_offset = 0.0f;
         } else if (fabsf(player.vx) > 8.0f) {
             if (walk_texture.ready) {
                 int f = forced_walk_frame >= 0 ? forced_walk_frame % 10 : ((int)(player.anim_time / 0.118f)) % 10;
                 src = HERO_WALK_SMOOTH_FRAMES[f];
-                draw_w = 49.0f;
-                draw_h = 68.0f;
-                static const float walk_ox[] = { 23.0f, 23.5f, 24.0f, 24.0f, 23.5f, 23.0f, 22.5f, 22.5f, 23.0f, 23.0f };
+                src.w = walk_src_w[f];
+                draw_w = walk_draw_w[f];
+                draw_h = walk_draw_h[f];
                 ox = walk_ox[f];
-                oy = 64.0f;
-                texture_src(&walk_texture, src, x + 5.0f - ox, y + 28.0f - oy, draw_w, draw_h, player.facing < 0);
+                oy = walk_oy[f];
+                texture_src(&walk_texture, src, x + 5.0f - draw_ox_for_facing(draw_w, ox, player.facing), y + 28.0f - oy, draw_w, draw_h, player.facing < 0);
                 return;
             } else {
                 int f = ((int)(player.anim_time / 0.125f)) % 6;
@@ -1039,7 +1426,7 @@ static void draw_player(void)
             draw_y_offset = 0.0f;
         }
 
-        texture_src(&player_texture, src, x + 5.0f - ox, y + 28.0f - oy + draw_y_offset, draw_w, draw_h, player.facing < 0);
+        texture_src(draw_texture, src, x + 5.0f - draw_ox_for_facing(draw_w, ox, player.facing), y + 28.0f - oy + draw_y_offset, draw_w, draw_h, player.facing < 0);
         return;
     }
 
@@ -1159,6 +1546,15 @@ static void display(void)
     glClear(GL_COLOR_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+    if (tune_mode && isolate_player) {
+        glTranslatef(130.0f - player.x, 132.0f - player.y, 0);
+        draw_tune_player();
+        glLoadIdentity();
+        draw_tune_overlay();
+        maybe_capture_frame();
+        glutSwapBuffers();
+        return;
+    }
     if (isolate_player) {
         glTranslatef(130.0f - player.x, 132.0f - player.y, 0);
         draw_player();
@@ -1175,10 +1571,17 @@ static void display(void)
     draw_map();
     draw_foreground_details();
     draw_particles();
-    draw_player();
+    if (tune_mode) {
+        draw_tune_player();
+    } else {
+        draw_player();
+    }
 
     glLoadIdentity();
     draw_hud();
+    if (tune_mode) {
+        draw_tune_overlay();
+    }
 
     maybe_capture_frame();
     glutSwapBuffers();
@@ -1218,6 +1621,65 @@ static void key_down(unsigned char key, int x, int y)
 {
     (void)x;
     (void)y;
+    if (tune_mode) {
+        float *draw_w;
+        float *draw_h;
+        float *ox;
+        float *oy;
+        tune_active_pose(&draw_w, &draw_h, &ox, &oy);
+
+        if (key == 27) {
+            exit(0);
+        } else if (key >= '1' && key <= '5') {
+            tune_anim = (TuneAnim)(key - '1');
+            tune_frame = 0;
+        } else if (key == '[') {
+            tune_frame = (tune_frame + tune_frame_count(tune_anim) - 1) % tune_frame_count(tune_anim);
+        } else if (key == ']') {
+            tune_frame = (tune_frame + 1) % tune_frame_count(tune_anim);
+        } else if (key == '=' || key == '+') {
+            *draw_w += 0.5f;
+            *draw_h += 0.5f;
+        } else if ((key == '-' || key == '_') && *draw_w > 4.0f && *draw_h > 4.0f) {
+            *draw_w -= 0.5f;
+            *draw_h -= 0.5f;
+        } else if (key == 'z' || key == 'Z') {
+            if (*draw_w > 4.0f) {
+                *draw_w -= 0.5f;
+            }
+        } else if (key == 'x' || key == 'X') {
+            *draw_w += 0.5f;
+        } else if (key == 'v' || key == 'V') {
+            *draw_h += 0.5f;
+        } else if ((key == 'c' || key == 'C') && *draw_h > 4.0f) {
+            *draw_h -= 0.5f;
+        } else if (key == 'q' || key == 'Q' || key == 'e' || key == 'E') {
+            int *src_w = tune_active_src_w();
+            if (src_w) {
+                int max_src_w = *src_w;
+                if (tune_anim == TUNE_IDLE) {
+                    max_src_w = HERO_IDLE_BREATH_FRAMES[tune_frame].w;
+                } else if (tune_anim == TUNE_WALK) {
+                    max_src_w = HERO_WALK_SMOOTH_FRAMES[tune_frame].w;
+                } else if (tune_anim == TUNE_SLASH) {
+                    max_src_w = HERO_SLASH_FRAMES[tune_frame].w;
+                }
+                int next_src_w = *src_w + ((key == 'e' || key == 'E') ? 1 : -1);
+                if (next_src_w >= 8 && next_src_w <= max_src_w) {
+                    *draw_w *= (float)next_src_w / (float)*src_w;
+                    *src_w = next_src_w;
+                }
+            }
+        } else if (key == 'o' || key == 'O') {
+            reset_tune_frame();
+        } else if (key == 'p' || key == 'P') {
+            dump_tune_tables();
+        } else {
+            keys[key] = true;
+        }
+        glutPostRedisplay();
+        return;
+    }
     keys[key] = true;
 }
 
@@ -1225,6 +1687,10 @@ static void key_up(unsigned char key, int x, int y)
 {
     (void)x;
     (void)y;
+    if (tune_mode) {
+        keys[key] = false;
+        return;
+    }
     keys[key] = false;
 }
 
@@ -1232,6 +1698,33 @@ static void special_down(int key, int x, int y)
 {
     (void)x;
     (void)y;
+    if (tune_mode) {
+        float *draw_w;
+        float *draw_h;
+        float *ox;
+        float *oy;
+        float step = 0.5f;
+        int modifiers = glutGetModifiers();
+        tune_active_pose(&draw_w, &draw_h, &ox, &oy);
+        (void)draw_w;
+        (void)draw_h;
+        if (modifiers & GLUT_ACTIVE_SHIFT) {
+            step = 0.1f;
+        } else if (modifiers & GLUT_ACTIVE_CTRL) {
+            step = 2.0f;
+        }
+        if (key == GLUT_KEY_LEFT) {
+            *ox += step;
+        } else if (key == GLUT_KEY_RIGHT) {
+            *ox -= step;
+        } else if (key == GLUT_KEY_UP) {
+            *oy += step;
+        } else if (key == GLUT_KEY_DOWN) {
+            *oy -= step;
+        }
+        glutPostRedisplay();
+        return;
+    }
     if (key >= 0 && key < 256) {
         special_keys[key] = true;
     }
@@ -1241,6 +1734,9 @@ static void special_up(int key, int x, int y)
 {
     (void)x;
     (void)y;
+    if (tune_mode) {
+        return;
+    }
     if (key >= 0 && key < 256) {
         special_keys[key] = false;
     }
@@ -1271,6 +1767,9 @@ int main(int argc, char **argv)
     if (!load_png_texture_keyed("assets/pilgrim_sheet_expanded_source.png", &player_texture, true)) {
         fprintf(stderr, "Could not load assets/pilgrim_sheet_expanded_source.png; using procedural fallback player.\n");
     }
+    if (!load_png_texture_keyed("assets/pilgrim_idle_breath_source.png", &idle_texture, true)) {
+        fprintf(stderr, "Could not load assets/pilgrim_idle_breath_source.png; using fallback idle frames.\n");
+    }
     if (!load_png_texture_keyed("assets/pilgrim_walk_cycle_source.png", &walk_texture, true)) {
         fprintf(stderr, "Could not load assets/pilgrim_walk_cycle_source.png; using fallback walk frames.\n");
     }
@@ -1285,7 +1784,40 @@ int main(int argc, char **argv)
     if (forced_walk_env) {
         forced_walk_frame = atoi(forced_walk_env);
     }
+    const char *forced_idle_env = getenv("PILGRIM_FORCE_IDLE_FRAME");
+    if (forced_idle_env) {
+        forced_idle_frame = atoi(forced_idle_env);
+    }
+    const char *forced_jump_env = getenv("PILGRIM_FORCE_JUMP_FRAME");
+    if (forced_jump_env) {
+        forced_jump_frame = atoi(forced_jump_env);
+    }
+    const char *forced_facing_env = getenv("PILGRIM_FORCE_FACING");
+    if (forced_facing_env) {
+        forced_facing = atoi(forced_facing_env) < 0 ? -1 : 1;
+        player.facing = forced_facing;
+    }
+    tune_mode = getenv("PILGRIM_TUNE") != NULL;
+    if (tune_mode) {
+        tune_anim = tune_anim_from_name(getenv("PILGRIM_TUNE_ANIM"));
+        const char *tune_frame_env = getenv("PILGRIM_TUNE_FRAME");
+        if (tune_frame_env) {
+            tune_frame = atoi(tune_frame_env);
+        }
+        if (tune_frame < 0) {
+            tune_frame = 0;
+        }
+        tune_frame %= tune_frame_count(tune_anim);
+    }
     isolate_player = getenv("PILGRIM_ISOLATE_PLAYER") != NULL;
+    if (tune_mode) {
+        player.x = 42.0f;
+        player.y = 148.0f;
+        player.vx = 0.0f;
+        player.vy = 0.0f;
+        player.grounded = true;
+        player.facing = forced_facing ? forced_facing : 1;
+    }
     telemetry_path = getenv("PILGRIM_TELEMETRY");
     if (telemetry_path) {
         telemetry_file = fopen(telemetry_path, "w");

@@ -11,7 +11,7 @@ else
 	LDFLAGS := -lglut -lGL -lGLU -lm
 endif
 
-.PHONY: all run check-animations analyze-walk clean
+.PHONY: all run tune check-animations analyze-walk analyze-idle analyze-jump analyze-proportions clean
 
 all: $(APP)
 
@@ -22,11 +22,23 @@ $(APP): $(SRC)
 run: $(APP)
 	./$(APP)
 
+tune: $(APP)
+	PILGRIM_TUNE=1 ./$(APP)
+
 check-animations: $(APP)
 	./scripts/check_animations.sh
 
 analyze-walk: $(APP)
 	./scripts/analyze_walk.sh
+
+analyze-idle: $(APP)
+	./scripts/analyze_idle.sh
+
+analyze-jump: $(APP)
+	./scripts/analyze_jump.sh
+
+analyze-proportions: $(APP)
+	./scripts/analyze_proportions.sh
 
 clean:
 	rm -rf build
