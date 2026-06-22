@@ -11,7 +11,7 @@ else
 	LDFLAGS := -lglut -lGL -lGLU -lm
 endif
 
-.PHONY: all run tune check-animations analyze-walk analyze-idle analyze-jump analyze-proportions clean
+.PHONY: all run tune check-animations analyze-walk observe-walk analyze-idle analyze-jump analyze-proportions clean
 
 all: $(APP)
 
@@ -30,6 +30,9 @@ check-animations: $(APP)
 
 analyze-walk: $(APP)
 	./scripts/analyze_walk.sh
+
+observe-walk: $(APP)
+	./scripts/observe_walk.sh
 
 analyze-idle: $(APP)
 	./scripts/analyze_idle.sh

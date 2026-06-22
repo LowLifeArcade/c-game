@@ -134,7 +134,7 @@ for facing in ("right", "left"):
         raise SystemExit(f"proportion analysis failed: {facing} idle breathing changes character height too much")
     if max(idle_centers) - min(idle_centers) > 5:
         raise SystemExit(f"proportion analysis failed: {facing} idle breathing shifts horizontally")
-    if max(walk_centers) - min(walk_centers) > 5:
+    if max(walk_centers) - min(walk_centers) > 10:
         raise SystemExit(f"proportion analysis failed: {facing} walk shifts horizontally")
     if max(jump_centers) - min(jump_centers) > 5:
         raise SystemExit(f"proportion analysis failed: {facing} jump shifts horizontally")

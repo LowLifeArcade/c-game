@@ -16,6 +16,7 @@ To capture and sanity-check the main animation states:
 make check-animations
 make analyze-idle
 make analyze-walk
+make observe-walk
 make analyze-jump
 make analyze-proportions
 ```
@@ -60,7 +61,8 @@ Run `make tune` or `PILGRIM_TUNE=1 make run` to play the game with the live spri
 - Set `PILGRIM_TELEMETRY=/tmp/pilgrim.tsv` with a scripted run to log frame-by-frame position, velocity, grounded state, air time, and camera position.
 - `make check-animations` captures idle, a ten-frame walk-cycle sample, jump, slash, and dash frames into `/tmp/pilgrim_animation_check` and checks for obvious unkeyed chroma-green sprite leaks.
 - `make analyze-idle` captures isolated idle breathing frames and checks planted-foot baseline/body-center drift.
-- `make analyze-walk` captures isolated walk frames and checks baseline/body-center drift.
+- `make analyze-walk` captures isolated walk frames and checks planted baseline, body-center drift, and raised-step articulation.
+- `make observe-walk` captures a timed scripted walk strip into `/tmp/pilgrim_walk_observe` so the slower articulated walk cadence can be reviewed frame-by-frame.
 - `make analyze-jump` captures isolated jump frames and checks drift, edge margin, and chroma-key leaks.
 - `make analyze-proportions` captures isolated idle, walk, jump, slash, and dash states and checks cross-state scale, centerline drift, and chroma-key leaks.
 - Set `PILGRIM_FORCE_IDLE_FRAME=0..5` to capture a specific authored breathing panel.

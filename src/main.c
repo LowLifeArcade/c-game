@@ -20,6 +20,10 @@
 #define MAP_W 96
 #define MAP_H 12
 #define FIXED_DT (1.0f / 60.0f)
+#define WALK_FRAME_SECONDS 0.120f
+#define WALK_ANIM_BASE_RATE 0.70f
+#define WALK_ANIM_SPEED_SCALE 210.0f
+#define WALK_ANIM_MAX_RATE 1.16f
 
 typedef struct {
     float x, y;
@@ -174,11 +178,12 @@ static const float DEFAULT_IDLE_OX[] = { 20.9f, 18.6f, 17.5f, 16.2f, 16.4f, 15.2
 static const float DEFAULT_IDLE_OY[] = { 54.0f, 54.0f, 54.0f, 54.0f, 54.0f, 54.0f };
 static const int DEFAULT_IDLE_SRC_W[] = { 362, 362, 362, 362, 315, 362 };
 
-static const int DEFAULT_WALK_SRC_W[] = { 217, 217, 217, 217, 217, 217, 217, 217, 195, 217 };
-static const float DEFAULT_WALK_DRAW_W[] = { 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f * (195.0f / 217.0f), 49.0f };
-static const float DEFAULT_WALK_DRAW_H[] = { 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f };
-static const float DEFAULT_WALK_OX[] = { 25.3f, 23.2f, 23.3f, 23.3f, 23.0f, 24.7f, 23.2f, 23.2f, 20.8f, 20.0f };
-static const float DEFAULT_WALK_OY[] = { 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f };
+static const int DEFAULT_WALK_SRC_X[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+static const int DEFAULT_WALK_SRC_W[] = { 217, 217, 217, 217, 217, 217, 217, 217, 217, 217 };
+static const float DEFAULT_WALK_DRAW_W[] = { 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f };
+static const float DEFAULT_WALK_DRAW_H[] = { 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f };
+static const float DEFAULT_WALK_OX[] = { 23.8f, 27.5f, 24.0f, 23.6f, 23.7f, 23.6f, 23.7f, 23.7f, 22.1f, 20.0f };
+static const float DEFAULT_WALK_OY[] = { 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f };
 
 static const float DEFAULT_JUMP_DRAW_W[] = { 54.0f, 61.0f, 61.0f, 61.0f };
 static const float DEFAULT_JUMP_DRAW_H[] = { 51.0f, 58.0f, 58.0f, 55.0f };
@@ -202,11 +207,12 @@ static float idle_ox[] = { 20.9f, 18.6f, 17.5f, 16.2f, 16.4f, 15.2f };
 static float idle_oy[] = { 54.0f, 54.0f, 54.0f, 54.0f, 54.0f, 54.0f };
 static int idle_src_w[] = { 362, 362, 362, 362, 315, 362 };
 
-static int walk_src_w[] = { 217, 217, 217, 217, 217, 217, 217, 217, 195, 217 };
-static float walk_draw_w[] = { 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f * (195.0f / 217.0f), 49.0f };
-static float walk_draw_h[] = { 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f, 68.0f };
-static float walk_ox[] = { 25.3f, 23.2f, 23.3f, 23.3f, 23.0f, 24.7f, 23.2f, 23.2f, 20.8f, 20.0f };
-static float walk_oy[] = { 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f, 64.0f };
+static int walk_src_x[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+static int walk_src_w[] = { 217, 217, 217, 217, 217, 217, 217, 217, 217, 217 };
+static float walk_draw_w[] = { 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f };
+static float walk_draw_h[] = { 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f };
+static float walk_ox[] = { 23.8f, 27.5f, 24.0f, 23.6f, 23.7f, 23.6f, 23.7f, 23.7f, 22.1f, 20.0f };
+static float walk_oy[] = { 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f };
 
 static float jump_draw_w[] = { 54.0f, 61.0f, 61.0f, 61.0f };
 static float jump_draw_h[] = { 51.0f, 58.0f, 58.0f, 55.0f };
@@ -787,7 +793,11 @@ static void update(float dt)
         player.air_time += dt;
     }
     if (fabsf(player.vx) > 4.0f && player.grounded && player.backdash_timer <= 0.0f) {
-        player.anim_time += dt * (0.65f + fabsf(player.vx) / 58.0f);
+        float walk_rate = WALK_ANIM_BASE_RATE + fabsf(player.vx) / WALK_ANIM_SPEED_SCALE;
+        if (walk_rate > WALK_ANIM_MAX_RATE) {
+            walk_rate = WALK_ANIM_MAX_RATE;
+        }
+        player.anim_time += dt * walk_rate;
     } else {
         player.anim_time += dt;
     }
@@ -967,6 +977,7 @@ static void dump_tune_tables(void)
     dump_float_table("idle_ox", idle_ox, 6);
     dump_float_table("idle_oy", idle_oy, 6);
     dump_int_table("idle_src_w", idle_src_w, 6);
+    dump_int_table("walk_src_x", walk_src_x, 10);
     dump_int_table("walk_src_w", walk_src_w, 10);
     dump_float_table("walk_draw_w", walk_draw_w, 10);
     dump_float_table("walk_draw_h", walk_draw_h, 10);
@@ -1000,6 +1011,7 @@ static void reset_tune_frame(void)
             idle_src_w[f] = DEFAULT_IDLE_SRC_W[f];
             break;
         case TUNE_WALK:
+            walk_src_x[f] = DEFAULT_WALK_SRC_X[f];
             walk_src_w[f] = DEFAULT_WALK_SRC_W[f];
             walk_draw_w[f] = DEFAULT_WALK_DRAW_W[f];
             walk_draw_h[f] = DEFAULT_WALK_DRAW_H[f];
@@ -1053,6 +1065,7 @@ static void draw_tune_player(void)
             texture = walk_texture.ready ? &walk_texture : &player_texture;
             src = walk_texture.ready ? HERO_WALK_SMOOTH_FRAMES[f] : HERO_WALK_FRAMES[f % 6];
             if (walk_texture.ready) {
+                src.x += walk_src_x[f];
                 src.w = walk_src_w[f];
             }
             break;
@@ -1405,8 +1418,9 @@ static void draw_player(void)
             draw_y_offset = 0.0f;
         } else if (fabsf(player.vx) > 8.0f) {
             if (walk_texture.ready) {
-                int f = forced_walk_frame >= 0 ? forced_walk_frame % 10 : ((int)(player.anim_time / 0.118f)) % 10;
+                int f = forced_walk_frame >= 0 ? forced_walk_frame % 10 : ((int)(player.anim_time / WALK_FRAME_SECONDS)) % 10;
                 src = HERO_WALK_SMOOTH_FRAMES[f];
+                src.x += walk_src_x[f];
                 src.w = walk_src_w[f];
                 draw_w = walk_draw_w[f];
                 draw_h = walk_draw_h[f];
@@ -1660,7 +1674,7 @@ static void key_down(unsigned char key, int x, int y)
                 if (tune_anim == TUNE_IDLE) {
                     max_src_w = HERO_IDLE_BREATH_FRAMES[tune_frame].w;
                 } else if (tune_anim == TUNE_WALK) {
-                    max_src_w = HERO_WALK_SMOOTH_FRAMES[tune_frame].w;
+                    max_src_w = HERO_WALK_SMOOTH_FRAMES[tune_frame].w - walk_src_x[tune_frame];
                 } else if (tune_anim == TUNE_SLASH) {
                     max_src_w = HERO_SLASH_FRAMES[tune_frame].w;
                 }

@@ -87,6 +87,11 @@ for facing, center_drift, baseline_drift, _ in summaries:
         raise SystemExit(f"walk analysis failed: {facing} baseline drift too high")
     if center_drift > 10:
         raise SystemExit(f"walk analysis failed: {facing} center drift too high")
+for facing, _, _, top_drift in summaries:
+    if top_drift < 2:
+        raise SystemExit(f"walk analysis failed: {facing} leg raise articulation too low")
+    if top_drift > 5:
+        raise SystemExit(f"walk analysis failed: {facing} leg raise articulation too exaggerated")
 PY
 
 echo "Walk analysis captures written to $out_dir"
