@@ -171,10 +171,15 @@ static const float DEFAULT_IDLE_DRAW_W[] = { 48.2f, 48.2f, 48.2f, 48.2f, 41.9f, 
 static const float DEFAULT_IDLE_DRAW_H[] = { 62.0f, 62.0f, 62.0f, 62.0f, 62.0f, 62.0f };
 static const float DEFAULT_IDLE_OX[] = { 24.0f, 21.3f, 20.1f, 18.6f, 18.8f, 17.4f };
 static const float DEFAULT_IDLE_OY[] = { 62.0f, 62.0f, 62.0f, 62.0f, 62.0f, 62.0f };
+static const int DEFAULT_IDLE_SRC_X[] = { 0, 0, 0, 0, 0, 0 };
+static const int DEFAULT_IDLE_SRC_Y[] = { 0, 0, 0, 0, 0, 0 };
 static const int DEFAULT_IDLE_SRC_W[] = { 362, 362, 362, 362, 315, 362 };
+static const int DEFAULT_IDLE_SRC_H[] = { 470, 470, 470, 470, 470, 470 };
 
 static const int DEFAULT_WALK_SRC_X[] = { 0, 0, 0, 0 };
+static const int DEFAULT_WALK_SRC_Y[] = { 0, 0, 0, 0 };
 static const int DEFAULT_WALK_SRC_W[] = { 420, 430, 498, 420 };
+static const int DEFAULT_WALK_SRC_H[] = { 530, 530, 530, 530 };
 static const float DEFAULT_WALK_DRAW_W[] = { 50.7f, 51.9f, 60.1f, 50.7f };
 static const float DEFAULT_WALK_DRAW_H[] = { 64.0f, 64.0f, 64.0f, 64.0f };
 static const float DEFAULT_WALK_OX[] = { 23.9f, 24.4f, 30.3f, 22.4f };
@@ -184,26 +189,42 @@ static const float DEFAULT_JUMP_DRAW_W[] = { 62.6f, 70.8f, 70.8f, 70.8f };
 static const float DEFAULT_JUMP_DRAW_H[] = { 59.2f, 67.3f, 67.3f, 63.8f };
 static const float DEFAULT_JUMP_OX[] = { 30.2f, 25.9f, 36.2f, 18.2f };
 static const float DEFAULT_JUMP_OY[] = { 56.8f, 63.8f, 63.8f, 61.5f };
+static const int DEFAULT_JUMP_SRC_X[] = { 0, 0, 0, 0 };
+static const int DEFAULT_JUMP_SRC_Y[] = { 0, 0, 0, 0 };
+static const int DEFAULT_JUMP_SRC_W[] = { 250, 260, 270, 275 };
+static const int DEFAULT_JUMP_SRC_H[] = { 225, 250, 255, 225 };
 
 static const float DEFAULT_SLASH_DRAW_W[] = { 58.0f, 74.0f, 80.2f, 58.0f };
 static const float DEFAULT_SLASH_DRAW_H[] = { 57.0f, 57.0f, 60.0f, 57.0f };
 static const float DEFAULT_SLASH_OX[] = { 23.0f, 23.0f, 23.0f, 23.0f };
 static const float DEFAULT_SLASH_OY[] = { 55.0f, 55.0f, 55.0f, 55.0f };
+static const int DEFAULT_SLASH_SRC_X[] = { 0, 0, 0, 0 };
+static const int DEFAULT_SLASH_SRC_Y[] = { 0, 0, 0, 0 };
 static const int DEFAULT_SLASH_SRC_W[] = { 245, 320, 370, 270 };
+static const int DEFAULT_SLASH_SRC_H[] = { 235, 250, 250, 235 };
 
 static const float DEFAULT_DASH_DRAW_W[] = { 70.8f };
 static const float DEFAULT_DASH_DRAW_H[] = { 67.3f };
 static const float DEFAULT_DASH_OX[] = { 25.9f };
 static const float DEFAULT_DASH_OY[] = { 63.8f };
+static const int DEFAULT_DASH_SRC_X[] = { 0 };
+static const int DEFAULT_DASH_SRC_Y[] = { 0 };
+static const int DEFAULT_DASH_SRC_W[] = { 260 };
+static const int DEFAULT_DASH_SRC_H[] = { 250 };
 
 static float idle_draw_w[] = { 48.2f, 48.2f, 48.2f, 48.2f, 41.9f, 48.2f };
 static float idle_draw_h[] = { 62.0f, 62.0f, 62.0f, 62.0f, 62.0f, 62.0f };
 static float idle_ox[] = { 24.0f, 21.3f, 20.1f, 18.6f, 18.8f, 17.4f };
 static float idle_oy[] = { 62.0f, 62.0f, 62.0f, 62.0f, 62.0f, 62.0f };
+static int idle_src_x[] = { 0, 0, 0, 0, 0, 0 };
+static int idle_src_y[] = { 0, 0, 0, 0, 0, 0 };
 static int idle_src_w[] = { 362, 362, 362, 362, 315, 362 };
+static int idle_src_h[] = { 470, 470, 470, 470, 470, 470 };
 
 static int walk_src_x[] = { 0, 0, 0, 0 };
+static int walk_src_y[] = { 0, 0, 0, 0 };
 static int walk_src_w[] = { 420, 430, 498, 420 };
+static int walk_src_h[] = { 530, 530, 530, 530 };
 static float walk_draw_w[] = { 50.7f, 51.9f, 60.1f, 50.7f };
 static float walk_draw_h[] = { 64.0f, 64.0f, 64.0f, 64.0f };
 static float walk_ox[] = { 23.9f, 24.4f, 30.3f, 22.4f };
@@ -213,17 +234,28 @@ static float jump_draw_w[] = { 62.6f, 70.8f, 70.8f, 70.8f };
 static float jump_draw_h[] = { 59.2f, 67.3f, 67.3f, 63.8f };
 static float jump_ox[] = { 30.2f, 25.9f, 36.2f, 18.2f };
 static float jump_oy[] = { 56.8f, 63.8f, 63.8f, 61.5f };
+static int jump_src_x[] = { 0, 0, 0, 0 };
+static int jump_src_y[] = { 0, 0, 0, 0 };
+static int jump_src_w[] = { 250, 260, 270, 275 };
+static int jump_src_h[] = { 225, 250, 255, 225 };
 
 static float slash_draw_w[] = { 58.0f, 74.0f, 80.2f, 58.0f };
 static float slash_draw_h[] = { 57.0f, 57.0f, 60.0f, 57.0f };
 static float slash_ox[] = { 23.0f, 23.0f, 23.0f, 23.0f };
 static float slash_oy[] = { 55.0f, 55.0f, 55.0f, 55.0f };
+static int slash_src_x[] = { 0, 0, 0, 0 };
+static int slash_src_y[] = { 0, 0, 0, 0 };
 static int slash_src_w[] = { 245, 320, 370, 270 };
+static int slash_src_h[] = { 235, 250, 250, 235 };
 
 static float dash_draw_w[] = { 70.8f };
 static float dash_draw_h[] = { 67.3f };
 static float dash_ox[] = { 25.9f };
 static float dash_oy[] = { 63.8f };
+static int dash_src_x[] = { 0 };
+static int dash_src_y[] = { 0 };
+static int dash_src_w[] = { 260 };
+static int dash_src_h[] = { 250 };
 
 static bool keys[256];
 static bool special_keys[256];
@@ -254,6 +286,7 @@ static bool captured_frame;
 static bool player_interacted;
 static bool isolate_player;
 static bool tune_mode;
+static bool tune_trim_mode;
 static TuneAnim tune_anim = TUNE_IDLE;
 static int tune_frame;
 static const char *tune_file_path = "assets/pilgrim_tuning.txt";
@@ -933,19 +966,93 @@ static void tune_active_pose(float **draw_w, float **draw_h, float **ox, float *
     }
 }
 
-static int *tune_active_src_w(void)
+static SrcRect tune_base_src_rect(TuneAnim anim, int frame)
+{
+    switch (anim) {
+        case TUNE_IDLE:
+            return HERO_IDLE_BREATH_FRAMES[frame % 6];
+        case TUNE_WALK:
+            return HERO_WALK_SMOOTH_FRAMES[frame % WALK_FRAME_COUNT];
+        case TUNE_JUMP:
+            return HERO_JUMP_FRAMES[frame % 4];
+        case TUNE_SLASH:
+            return HERO_SLASH_FRAMES[frame % 4];
+        case TUNE_DASH:
+            return HERO_JUMP_FRAMES[1];
+        default:
+            return HERO_IDLE_FRAMES[1];
+    }
+}
+
+static void tune_active_source(int **src_x, int **src_y, int **src_w, int **src_h, int *base_w, int *base_h)
 {
     int f = tune_frame % tune_frame_count(tune_anim);
+    SrcRect base = tune_base_src_rect(tune_anim, f);
+    *base_w = base.w;
+    *base_h = base.h;
     if (tune_anim == TUNE_IDLE) {
-        return &idle_src_w[f];
+        *src_x = &idle_src_x[f];
+        *src_y = &idle_src_y[f];
+        *src_w = &idle_src_w[f];
+        *src_h = &idle_src_h[f];
+    } else if (tune_anim == TUNE_WALK) {
+        *src_x = &walk_src_x[f];
+        *src_y = &walk_src_y[f];
+        *src_w = &walk_src_w[f];
+        *src_h = &walk_src_h[f];
+    } else if (tune_anim == TUNE_JUMP) {
+        *src_x = &jump_src_x[f];
+        *src_y = &jump_src_y[f];
+        *src_w = &jump_src_w[f];
+        *src_h = &jump_src_h[f];
+    } else if (tune_anim == TUNE_SLASH) {
+        *src_x = &slash_src_x[f];
+        *src_y = &slash_src_y[f];
+        *src_w = &slash_src_w[f];
+        *src_h = &slash_src_h[f];
+    } else if (tune_anim == TUNE_DASH) {
+        *src_x = &dash_src_x[0];
+        *src_y = &dash_src_y[0];
+        *src_w = &dash_src_w[0];
+        *src_h = &dash_src_h[0];
+    } else {
+        *src_x = NULL;
+        *src_y = NULL;
+        *src_w = NULL;
+        *src_h = NULL;
     }
-    if (tune_anim == TUNE_WALK) {
-        return &walk_src_w[f];
+}
+
+static void apply_source_crop(SrcRect *src, int crop_x, int crop_y, int crop_w, int crop_h)
+{
+    if (crop_x < 0) {
+        crop_x = 0;
     }
-    if (tune_anim == TUNE_SLASH) {
-        return &slash_src_w[f];
+    if (crop_y < 0) {
+        crop_y = 0;
     }
-    return NULL;
+    if (crop_x > src->w - 1) {
+        crop_x = src->w - 1;
+    }
+    if (crop_y > src->h - 1) {
+        crop_y = src->h - 1;
+    }
+    if (crop_w < 1) {
+        crop_w = 1;
+    }
+    if (crop_h < 1) {
+        crop_h = 1;
+    }
+    if (crop_x + crop_w > src->w) {
+        crop_w = src->w - crop_x;
+    }
+    if (crop_y + crop_h > src->h) {
+        crop_h = src->h - crop_y;
+    }
+    src->x += crop_x;
+    src->y += crop_y;
+    src->w = crop_w;
+    src->h = crop_h;
 }
 
 static bool tune_float_table(const char *name, float **values, int *count)
@@ -1055,8 +1162,23 @@ static bool tune_float_table(const char *name, float **values, int *count)
 
 static bool tune_int_table(const char *name, int **values, int *count)
 {
+    if (strcmp(name, "idle_src_x") == 0) {
+        *values = idle_src_x;
+        *count = 6;
+        return true;
+    }
+    if (strcmp(name, "idle_src_y") == 0) {
+        *values = idle_src_y;
+        *count = 6;
+        return true;
+    }
     if (strcmp(name, "idle_src_w") == 0) {
         *values = idle_src_w;
+        *count = 6;
+        return true;
+    }
+    if (strcmp(name, "idle_src_h") == 0) {
+        *values = idle_src_h;
         *count = 6;
         return true;
     }
@@ -1065,14 +1187,79 @@ static bool tune_int_table(const char *name, int **values, int *count)
         *count = WALK_FRAME_COUNT;
         return true;
     }
+    if (strcmp(name, "walk_src_y") == 0) {
+        *values = walk_src_y;
+        *count = WALK_FRAME_COUNT;
+        return true;
+    }
     if (strcmp(name, "walk_src_w") == 0) {
         *values = walk_src_w;
         *count = WALK_FRAME_COUNT;
         return true;
     }
+    if (strcmp(name, "walk_src_h") == 0) {
+        *values = walk_src_h;
+        *count = WALK_FRAME_COUNT;
+        return true;
+    }
+    if (strcmp(name, "jump_src_x") == 0) {
+        *values = jump_src_x;
+        *count = 4;
+        return true;
+    }
+    if (strcmp(name, "jump_src_y") == 0) {
+        *values = jump_src_y;
+        *count = 4;
+        return true;
+    }
+    if (strcmp(name, "jump_src_w") == 0) {
+        *values = jump_src_w;
+        *count = 4;
+        return true;
+    }
+    if (strcmp(name, "jump_src_h") == 0) {
+        *values = jump_src_h;
+        *count = 4;
+        return true;
+    }
+    if (strcmp(name, "slash_src_x") == 0) {
+        *values = slash_src_x;
+        *count = 4;
+        return true;
+    }
+    if (strcmp(name, "slash_src_y") == 0) {
+        *values = slash_src_y;
+        *count = 4;
+        return true;
+    }
     if (strcmp(name, "slash_src_w") == 0) {
         *values = slash_src_w;
         *count = 4;
+        return true;
+    }
+    if (strcmp(name, "slash_src_h") == 0) {
+        *values = slash_src_h;
+        *count = 4;
+        return true;
+    }
+    if (strcmp(name, "dash_src_x") == 0) {
+        *values = dash_src_x;
+        *count = 1;
+        return true;
+    }
+    if (strcmp(name, "dash_src_y") == 0) {
+        *values = dash_src_y;
+        *count = 1;
+        return true;
+    }
+    if (strcmp(name, "dash_src_w") == 0) {
+        *values = dash_src_w;
+        *count = 1;
+        return true;
+    }
+    if (strcmp(name, "dash_src_h") == 0) {
+        *values = dash_src_h;
+        *count = 1;
         return true;
     }
     return false;
@@ -1103,9 +1290,14 @@ static void write_tune_data_tables(FILE *out)
     write_data_float_table(out, "idle_draw_h", idle_draw_h, 6);
     write_data_float_table(out, "idle_ox", idle_ox, 6);
     write_data_float_table(out, "idle_oy", idle_oy, 6);
+    write_data_int_table(out, "idle_src_x", idle_src_x, 6);
+    write_data_int_table(out, "idle_src_y", idle_src_y, 6);
     write_data_int_table(out, "idle_src_w", idle_src_w, 6);
+    write_data_int_table(out, "idle_src_h", idle_src_h, 6);
     write_data_int_table(out, "walk_src_x", walk_src_x, WALK_FRAME_COUNT);
+    write_data_int_table(out, "walk_src_y", walk_src_y, WALK_FRAME_COUNT);
     write_data_int_table(out, "walk_src_w", walk_src_w, WALK_FRAME_COUNT);
+    write_data_int_table(out, "walk_src_h", walk_src_h, WALK_FRAME_COUNT);
     write_data_float_table(out, "walk_draw_w", walk_draw_w, WALK_FRAME_COUNT);
     write_data_float_table(out, "walk_draw_h", walk_draw_h, WALK_FRAME_COUNT);
     write_data_float_table(out, "walk_ox", walk_ox, WALK_FRAME_COUNT);
@@ -1114,15 +1306,26 @@ static void write_tune_data_tables(FILE *out)
     write_data_float_table(out, "jump_draw_h", jump_draw_h, 4);
     write_data_float_table(out, "jump_ox", jump_ox, 4);
     write_data_float_table(out, "jump_oy", jump_oy, 4);
+    write_data_int_table(out, "jump_src_x", jump_src_x, 4);
+    write_data_int_table(out, "jump_src_y", jump_src_y, 4);
+    write_data_int_table(out, "jump_src_w", jump_src_w, 4);
+    write_data_int_table(out, "jump_src_h", jump_src_h, 4);
     write_data_float_table(out, "slash_draw_w", slash_draw_w, 4);
     write_data_float_table(out, "slash_draw_h", slash_draw_h, 4);
     write_data_float_table(out, "slash_ox", slash_ox, 4);
     write_data_float_table(out, "slash_oy", slash_oy, 4);
+    write_data_int_table(out, "slash_src_x", slash_src_x, 4);
+    write_data_int_table(out, "slash_src_y", slash_src_y, 4);
     write_data_int_table(out, "slash_src_w", slash_src_w, 4);
+    write_data_int_table(out, "slash_src_h", slash_src_h, 4);
     write_data_float_table(out, "dash_draw_w", dash_draw_w, 1);
     write_data_float_table(out, "dash_draw_h", dash_draw_h, 1);
     write_data_float_table(out, "dash_ox", dash_ox, 1);
     write_data_float_table(out, "dash_oy", dash_oy, 1);
+    write_data_int_table(out, "dash_src_x", dash_src_x, 1);
+    write_data_int_table(out, "dash_src_y", dash_src_y, 1);
+    write_data_int_table(out, "dash_src_w", dash_src_w, 1);
+    write_data_int_table(out, "dash_src_h", dash_src_h, 1);
 }
 
 static bool save_tune_data(const char *path)
@@ -1214,9 +1417,14 @@ static void dump_tune_tables(FILE *out)
     dump_float_table(out, "idle_draw_h", idle_draw_h, 6);
     dump_float_table(out, "idle_ox", idle_ox, 6);
     dump_float_table(out, "idle_oy", idle_oy, 6);
+    dump_int_table(out, "idle_src_x", idle_src_x, 6);
+    dump_int_table(out, "idle_src_y", idle_src_y, 6);
     dump_int_table(out, "idle_src_w", idle_src_w, 6);
+    dump_int_table(out, "idle_src_h", idle_src_h, 6);
     dump_int_table(out, "walk_src_x", walk_src_x, WALK_FRAME_COUNT);
+    dump_int_table(out, "walk_src_y", walk_src_y, WALK_FRAME_COUNT);
     dump_int_table(out, "walk_src_w", walk_src_w, WALK_FRAME_COUNT);
+    dump_int_table(out, "walk_src_h", walk_src_h, WALK_FRAME_COUNT);
     dump_float_table(out, "walk_draw_w", walk_draw_w, WALK_FRAME_COUNT);
     dump_float_table(out, "walk_draw_h", walk_draw_h, WALK_FRAME_COUNT);
     dump_float_table(out, "walk_ox", walk_ox, WALK_FRAME_COUNT);
@@ -1225,15 +1433,26 @@ static void dump_tune_tables(FILE *out)
     dump_float_table(out, "jump_draw_h", jump_draw_h, 4);
     dump_float_table(out, "jump_ox", jump_ox, 4);
     dump_float_table(out, "jump_oy", jump_oy, 4);
+    dump_int_table(out, "jump_src_x", jump_src_x, 4);
+    dump_int_table(out, "jump_src_y", jump_src_y, 4);
+    dump_int_table(out, "jump_src_w", jump_src_w, 4);
+    dump_int_table(out, "jump_src_h", jump_src_h, 4);
     dump_float_table(out, "slash_draw_w", slash_draw_w, 4);
     dump_float_table(out, "slash_draw_h", slash_draw_h, 4);
     dump_float_table(out, "slash_ox", slash_ox, 4);
     dump_float_table(out, "slash_oy", slash_oy, 4);
+    dump_int_table(out, "slash_src_x", slash_src_x, 4);
+    dump_int_table(out, "slash_src_y", slash_src_y, 4);
     dump_int_table(out, "slash_src_w", slash_src_w, 4);
+    dump_int_table(out, "slash_src_h", slash_src_h, 4);
     dump_float_table(out, "dash_draw_w", dash_draw_w, 1);
     dump_float_table(out, "dash_draw_h", dash_draw_h, 1);
     dump_float_table(out, "dash_ox", dash_ox, 1);
     dump_float_table(out, "dash_oy", dash_oy, 1);
+    dump_int_table(out, "dash_src_x", dash_src_x, 1);
+    dump_int_table(out, "dash_src_y", dash_src_y, 1);
+    dump_int_table(out, "dash_src_w", dash_src_w, 1);
+    dump_int_table(out, "dash_src_h", dash_src_h, 1);
     fprintf(out, "/* end pilgrim animation tuning tables */\n\n");
 }
 
@@ -1259,11 +1478,16 @@ static void reset_tune_frame(void)
             idle_draw_h[f] = DEFAULT_IDLE_DRAW_H[f];
             idle_ox[f] = DEFAULT_IDLE_OX[f];
             idle_oy[f] = DEFAULT_IDLE_OY[f];
+            idle_src_x[f] = DEFAULT_IDLE_SRC_X[f];
+            idle_src_y[f] = DEFAULT_IDLE_SRC_Y[f];
             idle_src_w[f] = DEFAULT_IDLE_SRC_W[f];
+            idle_src_h[f] = DEFAULT_IDLE_SRC_H[f];
             break;
         case TUNE_WALK:
             walk_src_x[f] = DEFAULT_WALK_SRC_X[f];
+            walk_src_y[f] = DEFAULT_WALK_SRC_Y[f];
             walk_src_w[f] = DEFAULT_WALK_SRC_W[f];
+            walk_src_h[f] = DEFAULT_WALK_SRC_H[f];
             walk_draw_w[f] = DEFAULT_WALK_DRAW_W[f];
             walk_draw_h[f] = DEFAULT_WALK_DRAW_H[f];
             walk_ox[f] = DEFAULT_WALK_OX[f];
@@ -1274,19 +1498,131 @@ static void reset_tune_frame(void)
             jump_draw_h[f] = DEFAULT_JUMP_DRAW_H[f];
             jump_ox[f] = DEFAULT_JUMP_OX[f];
             jump_oy[f] = DEFAULT_JUMP_OY[f];
+            jump_src_x[f] = DEFAULT_JUMP_SRC_X[f];
+            jump_src_y[f] = DEFAULT_JUMP_SRC_Y[f];
+            jump_src_w[f] = DEFAULT_JUMP_SRC_W[f];
+            jump_src_h[f] = DEFAULT_JUMP_SRC_H[f];
             break;
         case TUNE_SLASH:
             slash_draw_w[f] = DEFAULT_SLASH_DRAW_W[f];
             slash_draw_h[f] = DEFAULT_SLASH_DRAW_H[f];
             slash_ox[f] = DEFAULT_SLASH_OX[f];
             slash_oy[f] = DEFAULT_SLASH_OY[f];
+            slash_src_x[f] = DEFAULT_SLASH_SRC_X[f];
+            slash_src_y[f] = DEFAULT_SLASH_SRC_Y[f];
             slash_src_w[f] = DEFAULT_SLASH_SRC_W[f];
+            slash_src_h[f] = DEFAULT_SLASH_SRC_H[f];
             break;
         case TUNE_DASH:
             dash_draw_w[0] = DEFAULT_DASH_DRAW_W[0];
             dash_draw_h[0] = DEFAULT_DASH_DRAW_H[0];
             dash_ox[0] = DEFAULT_DASH_OX[0];
             dash_oy[0] = DEFAULT_DASH_OY[0];
+            dash_src_x[0] = DEFAULT_DASH_SRC_X[0];
+            dash_src_y[0] = DEFAULT_DASH_SRC_Y[0];
+            dash_src_w[0] = DEFAULT_DASH_SRC_W[0];
+            dash_src_h[0] = DEFAULT_DASH_SRC_H[0];
+            break;
+        default:
+            break;
+    }
+}
+
+typedef enum {
+    TRIM_LEFT,
+    TRIM_RIGHT,
+    TRIM_TOP,
+    TRIM_BOTTOM
+} TrimEdge;
+
+static bool adjust_tune_source_edge(TrimEdge edge, int delta)
+{
+    float *draw_w;
+    float *draw_h;
+    float *ox;
+    float *oy;
+    int *src_x;
+    int *src_y;
+    int *src_w;
+    int *src_h;
+    int base_w;
+    int base_h;
+
+    tune_active_pose(&draw_w, &draw_h, &ox, &oy);
+    tune_active_source(&src_x, &src_y, &src_w, &src_h, &base_w, &base_h);
+    if (!src_x || !src_y || !src_w || !src_h || *src_w <= 0 || *src_h <= 0) {
+        return false;
+    }
+
+    switch (edge) {
+        case TRIM_LEFT: {
+            int next_x = *src_x + delta;
+            int next_w = *src_w - delta;
+            float pixels_to_world = *draw_w / (float)*src_w;
+            if (next_x < 0 || next_w < 8 || next_x + next_w > base_w) {
+                return false;
+            }
+            *src_x = next_x;
+            *src_w = next_w;
+            *draw_w = pixels_to_world * (float)next_w;
+            *ox -= pixels_to_world * (float)delta;
+            return true;
+        }
+        case TRIM_RIGHT: {
+            int next_w = *src_w - delta;
+            float pixels_to_world = *draw_w / (float)*src_w;
+            if (next_w < 8 || *src_x + next_w > base_w) {
+                return false;
+            }
+            *src_w = next_w;
+            *draw_w = pixels_to_world * (float)next_w;
+            return true;
+        }
+        case TRIM_TOP: {
+            int next_y = *src_y + delta;
+            int next_h = *src_h - delta;
+            float pixels_to_world = *draw_h / (float)*src_h;
+            if (next_y < 0 || next_h < 8 || next_y + next_h > base_h) {
+                return false;
+            }
+            *src_y = next_y;
+            *src_h = next_h;
+            *draw_h = pixels_to_world * (float)next_h;
+            *oy -= pixels_to_world * (float)delta;
+            return true;
+        }
+        case TRIM_BOTTOM: {
+            int next_h = *src_h - delta;
+            float pixels_to_world = *draw_h / (float)*src_h;
+            if (next_h < 8 || *src_y + next_h > base_h) {
+                return false;
+            }
+            *src_h = next_h;
+            *draw_h = pixels_to_world * (float)next_h;
+            return true;
+        }
+        default:
+            return false;
+    }
+}
+
+static void apply_runtime_source_crop(TuneAnim anim, int frame, SrcRect *src)
+{
+    switch (anim) {
+        case TUNE_IDLE:
+            apply_source_crop(src, idle_src_x[frame % 6], idle_src_y[frame % 6], idle_src_w[frame % 6], idle_src_h[frame % 6]);
+            break;
+        case TUNE_WALK:
+            apply_source_crop(src, walk_src_x[frame % WALK_FRAME_COUNT], walk_src_y[frame % WALK_FRAME_COUNT], walk_src_w[frame % WALK_FRAME_COUNT], walk_src_h[frame % WALK_FRAME_COUNT]);
+            break;
+        case TUNE_JUMP:
+            apply_source_crop(src, jump_src_x[frame % 4], jump_src_y[frame % 4], jump_src_w[frame % 4], jump_src_h[frame % 4]);
+            break;
+        case TUNE_SLASH:
+            apply_source_crop(src, slash_src_x[frame % 4], slash_src_y[frame % 4], slash_src_w[frame % 4], slash_src_h[frame % 4]);
+            break;
+        case TUNE_DASH:
+            apply_source_crop(src, dash_src_x[0], dash_src_y[0], dash_src_w[0], dash_src_h[0]);
             break;
         default:
             break;
@@ -1309,26 +1645,27 @@ static void draw_tune_player(void)
             texture = idle_texture.ready ? &idle_texture : &player_texture;
             src = idle_texture.ready ? HERO_IDLE_BREATH_FRAMES[f] : HERO_IDLE_FRAMES[f % 4];
             if (idle_texture.ready) {
-                src.w = idle_src_w[f];
+                apply_source_crop(&src, idle_src_x[f], idle_src_y[f], idle_src_w[f], idle_src_h[f]);
             }
             break;
         case TUNE_WALK:
             texture = walk_texture.ready ? &walk_texture : &player_texture;
             src = walk_texture.ready ? HERO_WALK_SMOOTH_FRAMES[f] : HERO_WALK_FRAMES[f % 6];
             if (walk_texture.ready) {
-                src.x += walk_src_x[f];
-                src.w = walk_src_w[f];
+                apply_source_crop(&src, walk_src_x[f], walk_src_y[f], walk_src_w[f], walk_src_h[f]);
             }
             break;
         case TUNE_JUMP:
             src = HERO_JUMP_FRAMES[f];
+            apply_source_crop(&src, jump_src_x[f], jump_src_y[f], jump_src_w[f], jump_src_h[f]);
             break;
         case TUNE_SLASH:
             src = HERO_SLASH_FRAMES[f];
-            src.w = slash_src_w[f];
+            apply_source_crop(&src, slash_src_x[f], slash_src_y[f], slash_src_w[f], slash_src_h[f]);
             break;
         case TUNE_DASH:
             src = HERO_JUMP_FRAMES[1];
+            apply_source_crop(&src, dash_src_x[0], dash_src_y[0], dash_src_w[0], dash_src_h[0]);
             break;
         default:
             break;
@@ -1346,24 +1683,37 @@ static void draw_tune_overlay(void)
     float *draw_h;
     float *ox;
     float *oy;
+    int *src_x;
+    int *src_y;
     int *src_w;
+    int *src_h;
+    int base_w;
+    int base_h;
     tune_active_pose(&draw_w, &draw_h, &ox, &oy);
-    src_w = tune_active_src_w();
+    tune_active_source(&src_x, &src_y, &src_w, &src_h, &base_w, &base_h);
 
     glPushMatrix();
     glLoadIdentity();
-    rect_alpha(5, 5, 310, 86, (Color){ 4, 5, 9 }, 210);
-    snprintf(buffer, sizeof(buffer), "TUNE %s frame %d/%d", tune_anim_name(tune_anim), tune_frame + 1, tune_frame_count(tune_anim));
+    rect_alpha(5, 5, 142, 72, (Color){ 4, 5, 9 }, 168);
+    rect_alpha(154, 5, 156, 86, (Color){ 4, 5, 9 }, 158);
+    snprintf(buffer, sizeof(buffer), "%s %s frame %d/%d", tune_trim_mode ? "TRIM" : "TUNE", tune_anim_name(tune_anim), tune_frame + 1, tune_frame_count(tune_anim));
     draw_text(10, 18, buffer, (Color){ 244, 224, 172 });
-    snprintf(buffer, sizeof(buffer), "w %.1f  h %.1f  ox %.1f  oy %.1f", *draw_w, *draw_h, *ox, *oy);
+    snprintf(buffer, sizeof(buffer), "w %.1f  h %.1f", *draw_w, *draw_h);
     draw_text(10, 32, buffer, (Color){ 210, 220, 226 });
-    if (src_w) {
-        snprintf(buffer, sizeof(buffer), "src_w %d", *src_w);
-        draw_text(232, 32, buffer, (Color){ 176, 206, 190 });
+    snprintf(buffer, sizeof(buffer), "ox %.1f  oy %.1f", *ox, *oy);
+    draw_text(10, 46, buffer, (Color){ 210, 220, 226 });
+    if (src_x && src_y && src_w && src_h) {
+        snprintf(buffer, sizeof(buffer), "src x %d y %d", *src_x, *src_y);
+        draw_text(10, 60, buffer, (Color){ 176, 206, 190 });
+        snprintf(buffer, sizeof(buffer), "w %d/%d h %d/%d", *src_w, base_w, *src_h, base_h);
+        draw_text(160, 18, buffer, (Color){ 176, 206, 190 });
     }
-    draw_text(10, 46, "1-5 anim  [/] frame  arrows nudge", (Color){ 150, 160, 170 });
-    draw_text(10, 60, "+/- scale  Z/X width  C/V height", (Color){ 150, 160, 170 });
-    draw_text(10, 74, "Q/E crop  O reset  S save  L load  P export", (Color){ 150, 160, 170 });
+    draw_text(160, 32, tune_trim_mode ? "Arrows: trim edges" : "Arrows: nudge frame", (Color){ 205, 212, 218 });
+    draw_text(160, 46, tune_trim_mode ? "Shift restore  Ctrl x4" : "1-5 anim  [/] frame", (Color){ 178, 187, 196 });
+    snprintf(buffer, sizeof(buffer), "Mode T: %s", tune_trim_mode ? "trim" : "nudge");
+    draw_text(160, 60, buffer, (Color){ 244, 224, 172 });
+    draw_text(160, 74, "Reset O  Save S  Load L", (Color){ 205, 212, 218 });
+    draw_text(160, 88, "Export P  Scale +/-  Size Z/X C/V", (Color){ 178, 187, 196 });
     glPopMatrix();
 }
 
@@ -1602,7 +1952,7 @@ static void draw_player(void)
         if (idle_texture.ready) {
             int f = forced_idle_frame >= 0 ? forced_idle_frame % 6 : ((int)(player.anim_time / 0.22f)) % 6;
             src = HERO_IDLE_BREATH_FRAMES[f];
-            src.w = idle_src_w[f];
+            apply_runtime_source_crop(TUNE_IDLE, f, &src);
             draw_texture = &idle_texture;
             draw_w = idle_draw_w[f];
             draw_h = idle_draw_h[f];
@@ -1613,6 +1963,7 @@ static void draw_player(void)
         if (forced_jump_frame >= 0) {
             int f = forced_jump_frame % 4;
             src = HERO_JUMP_FRAMES[f];
+            apply_runtime_source_crop(TUNE_JUMP, f, &src);
             draw_texture = &player_texture;
             draw_w = jump_draw_w[f];
             draw_h = jump_draw_h[f];
@@ -1628,7 +1979,7 @@ static void draw_player(void)
                 f = 3;
             }
             src = HERO_SLASH_FRAMES[f];
-            src.w = slash_src_w[f];
+            apply_runtime_source_crop(TUNE_SLASH, f, &src);
             draw_texture = &player_texture;
             draw_w = slash_draw_w[f];
             draw_h = slash_draw_h[f];
@@ -1637,6 +1988,7 @@ static void draw_player(void)
             draw_y_offset = 0.0f;
         } else if (player.landing_timer > 0.0f) {
             src = HERO_JUMP_FRAMES[3];
+            apply_runtime_source_crop(TUNE_JUMP, 3, &src);
             draw_texture = &player_texture;
             draw_w = jump_draw_w[3];
             draw_h = jump_draw_h[3];
@@ -1653,6 +2005,7 @@ static void draw_player(void)
                 f = 3;
             }
             src = HERO_JUMP_FRAMES[f];
+            apply_runtime_source_crop(TUNE_JUMP, f, &src);
             draw_texture = &player_texture;
             draw_w = jump_draw_w[f];
             draw_h = jump_draw_h[f];
@@ -1661,6 +2014,7 @@ static void draw_player(void)
             draw_y_offset = 0.0f;
         } else if (player.backdash_timer > 0.0f) {
             src = HERO_JUMP_FRAMES[1];
+            apply_runtime_source_crop(TUNE_DASH, 0, &src);
             draw_texture = &player_texture;
             draw_w = dash_draw_w[0];
             draw_h = dash_draw_h[0];
@@ -1671,8 +2025,7 @@ static void draw_player(void)
             if (walk_texture.ready) {
                 int f = forced_walk_frame >= 0 ? forced_walk_frame % WALK_FRAME_COUNT : ((int)(player.anim_time / WALK_FRAME_SECONDS)) % WALK_FRAME_COUNT;
                 src = HERO_WALK_SMOOTH_FRAMES[f];
-                src.x += walk_src_x[f];
-                src.w = walk_src_w[f];
+                apply_runtime_source_crop(TUNE_WALK, f, &src);
                 draw_w = walk_draw_w[f];
                 draw_h = walk_draw_h[f];
                 ox = walk_ox[f];
@@ -1918,23 +2271,8 @@ static void key_down(unsigned char key, int x, int y)
             *draw_h += 0.5f;
         } else if ((key == 'c' || key == 'C') && *draw_h > 4.0f) {
             *draw_h -= 0.5f;
-        } else if (key == 'q' || key == 'Q' || key == 'e' || key == 'E') {
-            int *src_w = tune_active_src_w();
-            if (src_w) {
-                int max_src_w = *src_w;
-                if (tune_anim == TUNE_IDLE) {
-                    max_src_w = HERO_IDLE_BREATH_FRAMES[tune_frame].w;
-                } else if (tune_anim == TUNE_WALK) {
-                    max_src_w = HERO_WALK_SMOOTH_FRAMES[tune_frame].w - walk_src_x[tune_frame];
-                } else if (tune_anim == TUNE_SLASH) {
-                    max_src_w = HERO_SLASH_FRAMES[tune_frame].w;
-                }
-                int next_src_w = *src_w + ((key == 'e' || key == 'E') ? 1 : -1);
-                if (next_src_w >= 8 && next_src_w <= max_src_w) {
-                    *draw_w *= (float)next_src_w / (float)*src_w;
-                    *src_w = next_src_w;
-                }
-            }
+        } else if (key == 't' || key == 'T') {
+            tune_trim_mode = !tune_trim_mode;
         } else if (key == 'o' || key == 'O') {
             reset_tune_frame();
         } else if (key == 's' || key == 'S') {
@@ -1974,6 +2312,7 @@ static void special_down(int key, int x, int y)
         float *ox;
         float *oy;
         float step = 0.5f;
+        int trim_step = 1;
         int modifiers = glutGetModifiers();
         tune_active_pose(&draw_w, &draw_h, &ox, &oy);
         (void)draw_w;
@@ -1983,7 +2322,21 @@ static void special_down(int key, int x, int y)
         } else if (modifiers & GLUT_ACTIVE_CTRL) {
             step = 2.0f;
         }
-        if (key == GLUT_KEY_LEFT) {
+        if (modifiers & GLUT_ACTIVE_CTRL) {
+            trim_step = 4;
+        }
+        if (modifiers & GLUT_ACTIVE_SHIFT) {
+            trim_step = -trim_step;
+        }
+        if (tune_trim_mode && key == GLUT_KEY_LEFT) {
+            adjust_tune_source_edge(TRIM_LEFT, trim_step);
+        } else if (tune_trim_mode && key == GLUT_KEY_RIGHT) {
+            adjust_tune_source_edge(TRIM_RIGHT, trim_step);
+        } else if (tune_trim_mode && key == GLUT_KEY_UP) {
+            adjust_tune_source_edge(TRIM_TOP, trim_step);
+        } else if (tune_trim_mode && key == GLUT_KEY_DOWN) {
+            adjust_tune_source_edge(TRIM_BOTTOM, trim_step);
+        } else if (key == GLUT_KEY_LEFT) {
             *ox += step;
         } else if (key == GLUT_KEY_RIGHT) {
             *ox -= step;

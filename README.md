@@ -40,10 +40,11 @@ The game loads sprite placement from `assets/pilgrim_tuning.txt` on startup. In 
 - `1` / `2` / `3` / `4` / `5`: edit idle, walk, jump, slash, or dash.
 - `[` / `]`: select the previous or next frame in that animation.
 - Arrow keys: nudge the selected frame. Hold Shift for 0.1-unit nudges or Control for 2-unit nudges.
+- `T`: enter or leave trim mode for the selected frame.
+- Trim mode arrow keys: trim the left, right, top, or bottom source edge. Hold Shift to restore outward or Control for 4-pixel steps.
 - `+` / `-`: scale width and height together.
 - `Z` / `X`: shrink or grow width only.
 - `C` / `V`: shrink or grow height only.
-- `Q` / `E`: shrink or grow source-cell crop width for animations that support source cropping.
 - `O`: reset the selected frame to the build's default tuning values.
 - `S`: save all current tuning tables to the active tuning file.
 - `L`: reload the active tuning file.
