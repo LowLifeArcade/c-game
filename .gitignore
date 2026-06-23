@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+._*
+
+# Native build and packaged releases
+/build/
+/dist/
+
+# Node and web build output
+node_modules/
+dist/
+.wrangler/
+*.tsbuildinfo
+
+# Local environment and logs
+.env
+.env.*
+!.env.example
+.dev.vars*
+*.log
+
+# Editor and IDE files
+.idea/
+.vscode/
+*.swp
+*~

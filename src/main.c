@@ -13,6 +13,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef PILGRIM_VERSION
+#define PILGRIM_VERSION "0.0.0-dev"
+#endif
+
 #define VIEW_W 320
 #define VIEW_H 180
 #define SCALE 3
@@ -2389,10 +2393,17 @@ static void special_up(int key, int x, int y)
 
 int main(int argc, char **argv)
 {
+    if (argc > 1 && strcmp(argv[1], "--version") == 0) {
+        printf("Pilgrim of the Thorn %s\n", PILGRIM_VERSION);
+        return 0;
+    }
+
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowSize(VIEW_W * SCALE, VIEW_H * SCALE);
-    glutCreateWindow("Pilgrim of the Thorn");
+    char window_title[96];
+    snprintf(window_title, sizeof(window_title), "Pilgrim of the Thorn %s", PILGRIM_VERSION);
+    glutCreateWindow(window_title);
     glClearColor(0.03f, 0.03f, 0.06f, 1.0f);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_TEXTURE_2D);

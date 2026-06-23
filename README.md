@@ -8,7 +8,28 @@ A proof-of-concept Catholic gothic 2D platformer written in C. It uses OpenGL/GL
 make
 make run
 make tune
+./build/pilgrim --version
 ```
+
+The game uses semantic versioning from the root `VERSION` file. Changing that file rebuilds the C executable with the new version and carries the same version into the macOS app, DMG, zip, and website.
+
+## Package for macOS
+
+```sh
+make package-macos
+```
+
+This creates versioned artifacts such as `dist/macos/Pilgrim-of-the-Thorn-macOS-v0.3.0.dmg` and `dist/macos/Pilgrim-of-the-Thorn-macOS-app-v0.3.0.zip`. Open the DMG and drag `Pilgrim of the Thorn.app` onto the `Applications` shortcut. The app bundle includes the executable, a concept-art app icon, and all required `assets/` files.
+
+## Deploy the Website and Current Game Build
+
+From either the project root or `web/`:
+
+```sh
+npm run deploy
+```
+
+The root command delegates to the web project. Both entry points rebuild the C game, package the current semantic version, copy that versioned DMG into the website, build the Vite/Worker app, and deploy it with Wrangler.
 
 To capture and sanity-check the main animation states:
 

@@ -1,5 +1,7 @@
 APP := build/pilgrim
 SRC := src/main.c
+VERSION_FILE := VERSION
+VERSION := $(shell tr -d '[:space:]' < $(VERSION_FILE))
 
 UNAME_S := $(shell uname -s)
 
@@ -11,19 +13,25 @@ else
 	LDFLAGS := -lglut -lGL -lGLU -lm
 endif
 
-.PHONY: all run tune check-animations analyze-walk observe-walk review-walk analyze-idle analyze-jump analyze-proportions clean
+.PHONY: all run tune version package-macos check-animations analyze-walk observe-walk review-walk analyze-idle analyze-jump analyze-proportions clean
 
 all: $(APP)
 
-$(APP): $(SRC)
+$(APP): $(SRC) $(VERSION_FILE)
 	@mkdir -p build
-	$(CC) $(CFLAGS) $< -o $@ $(LDFLAGS)
+	$(CC) $(CFLAGS) -DPILGRIM_VERSION=\"$(VERSION)\" $< -o $@ $(LDFLAGS)
 
 run: $(APP)
 	./$(APP)
 
 tune: $(APP)
 	PILGRIM_TUNE=1 ./$(APP)
+
+version:
+	@printf '%s\n' "$(VERSION)"
+
+package-macos: $(APP)
+	./scripts/package_macos.sh
 
 check-animations: $(APP)
 	./scripts/check_animations.sh
