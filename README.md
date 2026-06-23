@@ -17,6 +17,7 @@ make check-animations
 make analyze-idle
 make analyze-walk
 make observe-walk
+make review-walk
 make analyze-jump
 make analyze-proportions
 ```
@@ -34,6 +35,8 @@ make analyze-proportions
 
 Run `make tune` or `PILGRIM_TUNE=1 make run` to play the game with the live sprite tuning overlay enabled. The current animation tables are edited in memory while you move, jump, dash, and attack, so placement changes can be judged against real gameplay motion. For a frozen isolated frame bench, run `PILGRIM_TUNE=1 PILGRIM_ISOLATE_PLAYER=1 ./build/pilgrim`.
 
+The game loads sprite placement from `assets/pilgrim_tuning.txt` on startup. In tuning mode, press `S` to save the current values back to that file, or set `PILGRIM_TUNE_FILE=/path/to/file.txt` to work against a different tuning file.
+
 - `1` / `2` / `3` / `4` / `5`: edit idle, walk, jump, slash, or dash.
 - `[` / `]`: select the previous or next frame in that animation.
 - Arrow keys: nudge the selected frame. Hold Shift for 0.1-unit nudges or Control for 2-unit nudges.
@@ -42,7 +45,9 @@ Run `make tune` or `PILGRIM_TUNE=1 make run` to play the game with the live spri
 - `C` / `V`: shrink or grow height only.
 - `Q` / `E`: shrink or grow source-cell crop width for animations that support source cropping.
 - `O`: reset the selected frame to the build's default tuning values.
-- `P`: print the current tuning tables to stderr so tested values can be copied back into `src/main.c`.
+- `S`: save all current tuning tables to the active tuning file.
+- `L`: reload the active tuning file.
+- `P`: print the current tuning tables to stderr and export C declarations to `/tmp/pilgrim_tuning_tables.c`, or to `PILGRIM_TUNE_EXPORT=/path/to/tables.c`.
 - Optional capture helpers: set `PILGRIM_TUNE_ANIM=idle|walk|jump|slash|dash` and `PILGRIM_TUNE_FRAME=0..N` to open tuning mode on a specific frame.
 
 ## Prototype Notes
@@ -55,17 +60,19 @@ Run `make tune` or `PILGRIM_TUNE=1 make run` to play the game with the live spri
 - `assets/foreground_sheet_source.png` is a generated foreground atlas. The C loader keys out the green background at runtime.
 - `assets/pilgrim_sheet_expanded_source.png` is the fallback/generated action sheet for jump, fall, slash, dash, and older idle/walk panels.
 - `assets/pilgrim_idle_breath_source.png` is a dedicated 6-frame authored breathing cycle with planted feet.
-- `assets/pilgrim_walk_cycle_source.png` is a dedicated 10-frame walk-cycle sheet used for smoother left/right leg movement.
+- `assets/pilgrim_walk_cycle_source.png` is a dedicated 4-frame walk-cycle sheet: planted stride contact, rear foot lift, forward swing, descending pre-contact.
 - Set `PILGRIM_CAPTURE=/tmp/frame.ppm make run` to dump the first rendered frame for visual checks.
 - For animation checks, combine capture with `PILGRIM_SCRIPT=walk`, `PILGRIM_SCRIPT=jump`, `PILGRIM_SCRIPT=attack`, or `PILGRIM_SCRIPT=dash`, plus `PILGRIM_CAPTURE_FRAME=90` to capture after simulated input has advanced.
 - Set `PILGRIM_TELEMETRY=/tmp/pilgrim.tsv` with a scripted run to log frame-by-frame position, velocity, grounded state, air time, and camera position.
-- `make check-animations` captures idle, a ten-frame walk-cycle sample, jump, slash, and dash frames into `/tmp/pilgrim_animation_check` and checks for obvious unkeyed chroma-green sprite leaks.
+- `make check-animations` captures idle, a four-frame walk-cycle sample, jump, slash, and dash frames into `/tmp/pilgrim_animation_check` and checks for obvious unkeyed chroma-green sprite leaks.
 - `make analyze-idle` captures isolated idle breathing frames and checks planted-foot baseline/body-center drift.
 - `make analyze-walk` captures isolated walk frames and checks planted baseline, body-center drift, and raised-step articulation.
 - `make observe-walk` captures a timed scripted walk strip into `/tmp/pilgrim_walk_observe` so the slower articulated walk cadence can be reviewed frame-by-frame.
+- `make review-walk` captures the current walk and writes visual review artifacts into `/tmp/pilgrim_walk_review`: an animated loop, numbered contact sheet, onion-skin overlay, guide overlay, metrics table, and matching Richter reference artifacts when the downloaded Richter sheet is present.
 - `make analyze-jump` captures isolated jump frames and checks drift, edge margin, and chroma-key leaks.
 - `make analyze-proportions` captures isolated idle, walk, jump, slash, and dash states and checks cross-state scale, centerline drift, and chroma-key leaks.
 - Set `PILGRIM_FORCE_IDLE_FRAME=0..5` to capture a specific authored breathing panel.
-- Set `PILGRIM_FORCE_WALK_FRAME=0..9` with `PILGRIM_SCRIPT=walk` to capture a specific walk-cycle panel for frame-by-frame review.
+- Set `PILGRIM_FORCE_WALK_FRAME=0..3` with `PILGRIM_SCRIPT=walk` to capture a specific walk-cycle panel for frame-by-frame review.
+- Set `RICHTER_SHEET=/path/to/sheet.png` and optionally edit the `--reference-crop x,y,w,h` in `scripts/review_walk.sh` to compare against a different reference walk row.
 - Set `PILGRIM_FORCE_JUMP_FRAME=0..3` to capture a specific jump-cycle panel for frame-by-frame review.
 - Set `PILGRIM_FORCE_FACING=-1` or `1` to capture left- or right-facing animation frames.

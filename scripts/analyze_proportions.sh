@@ -2,6 +2,7 @@
 set -euo pipefail
 
 out_dir="${PILGRIM_PROPORTION_ANALYSIS_DIR:-/tmp/pilgrim_proportion_analysis}"
+walk_frames="${PILGRIM_WALK_FRAMES:-4}"
 mkdir -p "$out_dir"
 
 capture() {
@@ -24,7 +25,7 @@ for facing in right left; do
     capture "${facing}_idle_$frame" PILGRIM_FORCE_FACING="$facing_value" PILGRIM_FORCE_IDLE_FRAME="$frame"
   done
 
-  for frame in 0 1 2 3 4 5 6 7 8 9; do
+  for ((frame = 0; frame < walk_frames; frame++)); do
     capture "${facing}_walk_$frame" PILGRIM_FORCE_FACING="$facing_value" PILGRIM_SCRIPT=walk PILGRIM_FORCE_WALK_FRAME="$frame"
   done
 
@@ -36,12 +37,13 @@ for facing in right left; do
   capture "${facing}_dash" PILGRIM_FORCE_FACING="$facing_value" PILGRIM_SCRIPT=dash PILGRIM_CAPTURE_FRAME=34
 done
 
-python3 - "$out_dir" <<'PY'
+python3 - "$out_dir" "$walk_frames" <<'PY'
 import os
 import statistics
 import sys
 
 out_dir = sys.argv[1]
+walk_frames = int(sys.argv[2])
 
 def bounds(name):
     path = os.path.join(out_dir, f"{name}.ppm")
@@ -93,7 +95,7 @@ def bounds(name):
 groups = {}
 for facing in ("right", "left"):
     groups[f"{facing}_idle"] = [bounds(f"{facing}_idle_{i}") for i in range(6)]
-    groups[f"{facing}_walk"] = [bounds(f"{facing}_walk_{i}") for i in range(10)]
+    groups[f"{facing}_walk"] = [bounds(f"{facing}_walk_{i}") for i in range(walk_frames)]
     groups[f"{facing}_jump"] = [bounds(f"{facing}_jump_{i}") for i in range(4)]
     groups[f"{facing}_action"] = [bounds(f"{facing}_slash"), bounds(f"{facing}_dash")]
 

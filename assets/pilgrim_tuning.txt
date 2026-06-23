@@ -1,0 +1,25 @@
+# Pilgrim animation tuning data. Edit with PILGRIM_TUNE=1 make run, then press S.
+idle_draw_w 6 48.2 48.2 48.2 48.2 41.9 48.2
+idle_draw_h 6 62.0 62.0 62.0 62.0 62.0 62.0
+idle_ox 6 24.0 21.3 20.1 18.6 18.8 17.4
+idle_oy 6 62.0 62.0 62.0 62.0 62.0 62.0
+idle_src_w 6 362 362 362 362 315 362
+walk_src_x 4 0 0 0 0
+walk_src_w 4 420 430 498 420
+walk_draw_w 4 50.7 51.9 60.1 50.7
+walk_draw_h 4 64.0 64.0 64.0 64.0
+walk_ox 4 22.9 24.4 19.3 22.4
+walk_oy 4 62.2 62.7 62.2 62.7
+jump_draw_w 4 62.6 70.8 70.8 70.8
+jump_draw_h 4 59.2 67.3 67.3 63.8
+jump_ox 4 30.2 25.9 36.2 18.2
+jump_oy 4 56.8 63.8 63.8 61.5
+slash_draw_w 4 58.0 74.0 80.2 58.0
+slash_draw_h 4 57.0 57.0 60.0 57.0
+slash_ox 4 23.0 23.0 23.0 23.0
+slash_oy 4 55.0 55.0 55.0 55.0
+slash_src_w 4 245 320 370 270
+dash_draw_w 1 70.8
+dash_draw_h 1 67.3
+dash_ox 1 25.9
+dash_oy 1 63.8

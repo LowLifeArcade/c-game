@@ -20,7 +20,8 @@
 #define MAP_W 96
 #define MAP_H 12
 #define FIXED_DT (1.0f / 60.0f)
-#define WALK_FRAME_SECONDS 0.120f
+#define WALK_FRAME_SECONDS 0.145f
+#define WALK_FRAME_COUNT 4
 #define WALK_ANIM_BASE_RATE 0.70f
 #define WALK_ANIM_SPEED_SCALE 210.0f
 #define WALK_ANIM_MAX_RATE 1.16f
@@ -82,14 +83,14 @@ static const char *map_rows[MAP_H] = {
     "................................................................................................",
     "................................................................................................",
     "................................................................................................",
-    "......................##.................................###..............................###.....",
-    ".......................#.................##...............#....................##..........#......",
-    "...............##......#............................##....#...........###..................#......",
-    "...............#.......#.............##.............#.....#............#.............##....#......",
-    ".....##........#.....................#..............#..................#.............#.....#......",
-    ".....#.....................##........#.........................##....................#............",
-    ".................###.......#...................###.............#..............###.................",
-    ".................###...........................###............................###.................",
+    "................................................................................................",
+    "................................................................................................",
+    "................................................................................................",
+    "................................................................................................",
+    "................................................................................................",
+    "................................................................................................",
+    "................................................................................................",
+    "................................................................................................",
     "################################################################################################",
 };
 
@@ -148,16 +149,10 @@ static const SrcRect HERO_WALK_FRAMES[] = {
     { 1165, 305, 215, 260 },
 };
 static const SrcRect HERO_WALK_SMOOTH_FRAMES[] = {
-    { 0, 145, 217, 395 },
-    { 217, 145, 217, 395 },
-    { 434, 145, 217, 395 },
-    { 651, 145, 217, 395 },
-    { 868, 145, 217, 395 },
-    { 1085, 145, 217, 395 },
-    { 1302, 145, 217, 395 },
-    { 1519, 145, 217, 395 },
-    { 1736, 145, 217, 395 },
-    { 1953, 145, 217, 395 },
+    { 45, 110, 420, 530 },
+    { 535, 110, 430, 530 },
+    { 1050, 110, 498, 530 },
+    { 1536, 110, 420, 530 },
 };
 static const SrcRect HERO_JUMP_FRAMES[] = {
     { 50, 585, 250, 225 },
@@ -172,23 +167,23 @@ static const SrcRect HERO_SLASH_FRAMES[] = {
     { 1065, 842, 270, 235 },
 };
 
-static const float DEFAULT_IDLE_DRAW_W[] = { 42.0f, 42.0f, 42.0f, 42.0f, 36.5f, 42.0f };
-static const float DEFAULT_IDLE_DRAW_H[] = { 54.0f, 54.0f, 54.0f, 54.0f, 54.0f, 54.0f };
-static const float DEFAULT_IDLE_OX[] = { 20.9f, 18.6f, 17.5f, 16.2f, 16.4f, 15.2f };
-static const float DEFAULT_IDLE_OY[] = { 54.0f, 54.0f, 54.0f, 54.0f, 54.0f, 54.0f };
+static const float DEFAULT_IDLE_DRAW_W[] = { 48.2f, 48.2f, 48.2f, 48.2f, 41.9f, 48.2f };
+static const float DEFAULT_IDLE_DRAW_H[] = { 62.0f, 62.0f, 62.0f, 62.0f, 62.0f, 62.0f };
+static const float DEFAULT_IDLE_OX[] = { 24.0f, 21.3f, 20.1f, 18.6f, 18.8f, 17.4f };
+static const float DEFAULT_IDLE_OY[] = { 62.0f, 62.0f, 62.0f, 62.0f, 62.0f, 62.0f };
 static const int DEFAULT_IDLE_SRC_W[] = { 362, 362, 362, 362, 315, 362 };
 
-static const int DEFAULT_WALK_SRC_X[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-static const int DEFAULT_WALK_SRC_W[] = { 217, 217, 217, 217, 217, 217, 217, 217, 217, 217 };
-static const float DEFAULT_WALK_DRAW_W[] = { 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f };
-static const float DEFAULT_WALK_DRAW_H[] = { 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f };
-static const float DEFAULT_WALK_OX[] = { 23.8f, 27.5f, 24.0f, 23.6f, 23.7f, 23.6f, 23.7f, 23.7f, 22.1f, 20.0f };
-static const float DEFAULT_WALK_OY[] = { 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f };
+static const int DEFAULT_WALK_SRC_X[] = { 0, 0, 0, 0 };
+static const int DEFAULT_WALK_SRC_W[] = { 420, 430, 498, 420 };
+static const float DEFAULT_WALK_DRAW_W[] = { 50.7f, 51.9f, 60.1f, 50.7f };
+static const float DEFAULT_WALK_DRAW_H[] = { 64.0f, 64.0f, 64.0f, 64.0f };
+static const float DEFAULT_WALK_OX[] = { 23.9f, 24.4f, 30.3f, 22.4f };
+static const float DEFAULT_WALK_OY[] = { 62.2f, 62.2f, 62.2f, 62.2f };
 
-static const float DEFAULT_JUMP_DRAW_W[] = { 54.0f, 61.0f, 61.0f, 61.0f };
-static const float DEFAULT_JUMP_DRAW_H[] = { 51.0f, 58.0f, 58.0f, 55.0f };
-static const float DEFAULT_JUMP_OX[] = { 26.0f, 22.3f, 31.2f, 15.7f };
-static const float DEFAULT_JUMP_OY[] = { 49.0f, 55.0f, 55.0f, 53.0f };
+static const float DEFAULT_JUMP_DRAW_W[] = { 62.6f, 70.8f, 70.8f, 70.8f };
+static const float DEFAULT_JUMP_DRAW_H[] = { 59.2f, 67.3f, 67.3f, 63.8f };
+static const float DEFAULT_JUMP_OX[] = { 30.2f, 25.9f, 36.2f, 18.2f };
+static const float DEFAULT_JUMP_OY[] = { 56.8f, 63.8f, 63.8f, 61.5f };
 
 static const float DEFAULT_SLASH_DRAW_W[] = { 58.0f, 74.0f, 80.2f, 58.0f };
 static const float DEFAULT_SLASH_DRAW_H[] = { 57.0f, 57.0f, 60.0f, 57.0f };
@@ -196,28 +191,28 @@ static const float DEFAULT_SLASH_OX[] = { 23.0f, 23.0f, 23.0f, 23.0f };
 static const float DEFAULT_SLASH_OY[] = { 55.0f, 55.0f, 55.0f, 55.0f };
 static const int DEFAULT_SLASH_SRC_W[] = { 245, 320, 370, 270 };
 
-static const float DEFAULT_DASH_DRAW_W[] = { 61.0f };
-static const float DEFAULT_DASH_DRAW_H[] = { 58.0f };
-static const float DEFAULT_DASH_OX[] = { 22.3f };
-static const float DEFAULT_DASH_OY[] = { 55.0f };
+static const float DEFAULT_DASH_DRAW_W[] = { 70.8f };
+static const float DEFAULT_DASH_DRAW_H[] = { 67.3f };
+static const float DEFAULT_DASH_OX[] = { 25.9f };
+static const float DEFAULT_DASH_OY[] = { 63.8f };
 
-static float idle_draw_w[] = { 42.0f, 42.0f, 42.0f, 42.0f, 36.5f, 42.0f };
-static float idle_draw_h[] = { 54.0f, 54.0f, 54.0f, 54.0f, 54.0f, 54.0f };
-static float idle_ox[] = { 20.9f, 18.6f, 17.5f, 16.2f, 16.4f, 15.2f };
-static float idle_oy[] = { 54.0f, 54.0f, 54.0f, 54.0f, 54.0f, 54.0f };
+static float idle_draw_w[] = { 48.2f, 48.2f, 48.2f, 48.2f, 41.9f, 48.2f };
+static float idle_draw_h[] = { 62.0f, 62.0f, 62.0f, 62.0f, 62.0f, 62.0f };
+static float idle_ox[] = { 24.0f, 21.3f, 20.1f, 18.6f, 18.8f, 17.4f };
+static float idle_oy[] = { 62.0f, 62.0f, 62.0f, 62.0f, 62.0f, 62.0f };
 static int idle_src_w[] = { 362, 362, 362, 362, 315, 362 };
 
-static int walk_src_x[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-static int walk_src_w[] = { 217, 217, 217, 217, 217, 217, 217, 217, 217, 217 };
-static float walk_draw_w[] = { 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f, 49.0f };
-static float walk_draw_h[] = { 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f, 67.4f };
-static float walk_ox[] = { 23.8f, 27.5f, 24.0f, 23.6f, 23.7f, 23.6f, 23.7f, 23.7f, 22.1f, 20.0f };
-static float walk_oy[] = { 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f, 63.4f };
+static int walk_src_x[] = { 0, 0, 0, 0 };
+static int walk_src_w[] = { 420, 430, 498, 420 };
+static float walk_draw_w[] = { 50.7f, 51.9f, 60.1f, 50.7f };
+static float walk_draw_h[] = { 64.0f, 64.0f, 64.0f, 64.0f };
+static float walk_ox[] = { 23.9f, 24.4f, 30.3f, 22.4f };
+static float walk_oy[] = { 62.2f, 62.2f, 62.2f, 62.2f };
 
-static float jump_draw_w[] = { 54.0f, 61.0f, 61.0f, 61.0f };
-static float jump_draw_h[] = { 51.0f, 58.0f, 58.0f, 55.0f };
-static float jump_ox[] = { 26.0f, 22.3f, 31.2f, 15.7f };
-static float jump_oy[] = { 49.0f, 55.0f, 55.0f, 53.0f };
+static float jump_draw_w[] = { 62.6f, 70.8f, 70.8f, 70.8f };
+static float jump_draw_h[] = { 59.2f, 67.3f, 67.3f, 63.8f };
+static float jump_ox[] = { 30.2f, 25.9f, 36.2f, 18.2f };
+static float jump_oy[] = { 56.8f, 63.8f, 63.8f, 61.5f };
 
 static float slash_draw_w[] = { 58.0f, 74.0f, 80.2f, 58.0f };
 static float slash_draw_h[] = { 57.0f, 57.0f, 60.0f, 57.0f };
@@ -225,10 +220,10 @@ static float slash_ox[] = { 23.0f, 23.0f, 23.0f, 23.0f };
 static float slash_oy[] = { 55.0f, 55.0f, 55.0f, 55.0f };
 static int slash_src_w[] = { 245, 320, 370, 270 };
 
-static float dash_draw_w[] = { 61.0f };
-static float dash_draw_h[] = { 58.0f };
-static float dash_ox[] = { 22.3f };
-static float dash_oy[] = { 55.0f };
+static float dash_draw_w[] = { 70.8f };
+static float dash_draw_h[] = { 67.3f };
+static float dash_ox[] = { 25.9f };
+static float dash_oy[] = { 63.8f };
 
 static bool keys[256];
 static bool special_keys[256];
@@ -261,6 +256,8 @@ static bool isolate_player;
 static bool tune_mode;
 static TuneAnim tune_anim = TUNE_IDLE;
 static int tune_frame;
+static const char *tune_file_path = "assets/pilgrim_tuning.txt";
+static const char *tune_export_path = "/tmp/pilgrim_tuning_tables.c";
 
 static void color(Color c)
 {
@@ -850,7 +847,7 @@ static int tune_frame_count(TuneAnim anim)
 {
     switch (anim) {
         case TUNE_IDLE: return 6;
-        case TUNE_WALK: return 10;
+        case TUNE_WALK: return WALK_FRAME_COUNT;
         case TUNE_JUMP: return 4;
         case TUNE_SLASH: return 4;
         case TUNE_DASH: return 1;
@@ -951,52 +948,306 @@ static int *tune_active_src_w(void)
     return NULL;
 }
 
-static void dump_float_table(const char *name, float *values, int count)
+static bool tune_float_table(const char *name, float **values, int *count)
 {
-    fprintf(stderr, "static float %s[] = { ", name);
-    for (int i = 0; i < count; ++i) {
-        fprintf(stderr, "%.1ff%s", values[i], i == count - 1 ? " " : ", ");
+    if (strcmp(name, "idle_draw_w") == 0) {
+        *values = idle_draw_w;
+        *count = 6;
+        return true;
     }
-    fprintf(stderr, "};\n");
+    if (strcmp(name, "idle_draw_h") == 0) {
+        *values = idle_draw_h;
+        *count = 6;
+        return true;
+    }
+    if (strcmp(name, "idle_ox") == 0) {
+        *values = idle_ox;
+        *count = 6;
+        return true;
+    }
+    if (strcmp(name, "idle_oy") == 0) {
+        *values = idle_oy;
+        *count = 6;
+        return true;
+    }
+    if (strcmp(name, "walk_draw_w") == 0) {
+        *values = walk_draw_w;
+        *count = WALK_FRAME_COUNT;
+        return true;
+    }
+    if (strcmp(name, "walk_draw_h") == 0) {
+        *values = walk_draw_h;
+        *count = WALK_FRAME_COUNT;
+        return true;
+    }
+    if (strcmp(name, "walk_ox") == 0) {
+        *values = walk_ox;
+        *count = WALK_FRAME_COUNT;
+        return true;
+    }
+    if (strcmp(name, "walk_oy") == 0) {
+        *values = walk_oy;
+        *count = WALK_FRAME_COUNT;
+        return true;
+    }
+    if (strcmp(name, "jump_draw_w") == 0) {
+        *values = jump_draw_w;
+        *count = 4;
+        return true;
+    }
+    if (strcmp(name, "jump_draw_h") == 0) {
+        *values = jump_draw_h;
+        *count = 4;
+        return true;
+    }
+    if (strcmp(name, "jump_ox") == 0) {
+        *values = jump_ox;
+        *count = 4;
+        return true;
+    }
+    if (strcmp(name, "jump_oy") == 0) {
+        *values = jump_oy;
+        *count = 4;
+        return true;
+    }
+    if (strcmp(name, "slash_draw_w") == 0) {
+        *values = slash_draw_w;
+        *count = 4;
+        return true;
+    }
+    if (strcmp(name, "slash_draw_h") == 0) {
+        *values = slash_draw_h;
+        *count = 4;
+        return true;
+    }
+    if (strcmp(name, "slash_ox") == 0) {
+        *values = slash_ox;
+        *count = 4;
+        return true;
+    }
+    if (strcmp(name, "slash_oy") == 0) {
+        *values = slash_oy;
+        *count = 4;
+        return true;
+    }
+    if (strcmp(name, "dash_draw_w") == 0) {
+        *values = dash_draw_w;
+        *count = 1;
+        return true;
+    }
+    if (strcmp(name, "dash_draw_h") == 0) {
+        *values = dash_draw_h;
+        *count = 1;
+        return true;
+    }
+    if (strcmp(name, "dash_ox") == 0) {
+        *values = dash_ox;
+        *count = 1;
+        return true;
+    }
+    if (strcmp(name, "dash_oy") == 0) {
+        *values = dash_oy;
+        *count = 1;
+        return true;
+    }
+    return false;
 }
 
-static void dump_int_table(const char *name, int *values, int count)
+static bool tune_int_table(const char *name, int **values, int *count)
 {
-    fprintf(stderr, "static int %s[] = { ", name);
-    for (int i = 0; i < count; ++i) {
-        fprintf(stderr, "%d%s", values[i], i == count - 1 ? " " : ", ");
+    if (strcmp(name, "idle_src_w") == 0) {
+        *values = idle_src_w;
+        *count = 6;
+        return true;
     }
-    fprintf(stderr, "};\n");
+    if (strcmp(name, "walk_src_x") == 0) {
+        *values = walk_src_x;
+        *count = WALK_FRAME_COUNT;
+        return true;
+    }
+    if (strcmp(name, "walk_src_w") == 0) {
+        *values = walk_src_w;
+        *count = WALK_FRAME_COUNT;
+        return true;
+    }
+    if (strcmp(name, "slash_src_w") == 0) {
+        *values = slash_src_w;
+        *count = 4;
+        return true;
+    }
+    return false;
 }
 
-static void dump_tune_tables(void)
+static void write_data_float_table(FILE *out, const char *name, float *values, int count)
 {
-    fprintf(stderr, "\n--- pilgrim animation tuning tables ---\n");
-    dump_float_table("idle_draw_w", idle_draw_w, 6);
-    dump_float_table("idle_draw_h", idle_draw_h, 6);
-    dump_float_table("idle_ox", idle_ox, 6);
-    dump_float_table("idle_oy", idle_oy, 6);
-    dump_int_table("idle_src_w", idle_src_w, 6);
-    dump_int_table("walk_src_x", walk_src_x, 10);
-    dump_int_table("walk_src_w", walk_src_w, 10);
-    dump_float_table("walk_draw_w", walk_draw_w, 10);
-    dump_float_table("walk_draw_h", walk_draw_h, 10);
-    dump_float_table("walk_ox", walk_ox, 10);
-    dump_float_table("walk_oy", walk_oy, 10);
-    dump_float_table("jump_draw_w", jump_draw_w, 4);
-    dump_float_table("jump_draw_h", jump_draw_h, 4);
-    dump_float_table("jump_ox", jump_ox, 4);
-    dump_float_table("jump_oy", jump_oy, 4);
-    dump_float_table("slash_draw_w", slash_draw_w, 4);
-    dump_float_table("slash_draw_h", slash_draw_h, 4);
-    dump_float_table("slash_ox", slash_ox, 4);
-    dump_float_table("slash_oy", slash_oy, 4);
-    dump_int_table("slash_src_w", slash_src_w, 4);
-    dump_float_table("dash_draw_w", dash_draw_w, 1);
-    dump_float_table("dash_draw_h", dash_draw_h, 1);
-    dump_float_table("dash_ox", dash_ox, 1);
-    dump_float_table("dash_oy", dash_oy, 1);
-    fprintf(stderr, "--- end pilgrim animation tuning tables ---\n\n");
+    fprintf(out, "%s %d", name, count);
+    for (int i = 0; i < count; ++i) {
+        fprintf(out, " %.1f", values[i]);
+    }
+    fprintf(out, "\n");
+}
+
+static void write_data_int_table(FILE *out, const char *name, int *values, int count)
+{
+    fprintf(out, "%s %d", name, count);
+    for (int i = 0; i < count; ++i) {
+        fprintf(out, " %d", values[i]);
+    }
+    fprintf(out, "\n");
+}
+
+static void write_tune_data_tables(FILE *out)
+{
+    fprintf(out, "# Pilgrim animation tuning data. Edit with PILGRIM_TUNE=1 make run, then press S.\n");
+    write_data_float_table(out, "idle_draw_w", idle_draw_w, 6);
+    write_data_float_table(out, "idle_draw_h", idle_draw_h, 6);
+    write_data_float_table(out, "idle_ox", idle_ox, 6);
+    write_data_float_table(out, "idle_oy", idle_oy, 6);
+    write_data_int_table(out, "idle_src_w", idle_src_w, 6);
+    write_data_int_table(out, "walk_src_x", walk_src_x, WALK_FRAME_COUNT);
+    write_data_int_table(out, "walk_src_w", walk_src_w, WALK_FRAME_COUNT);
+    write_data_float_table(out, "walk_draw_w", walk_draw_w, WALK_FRAME_COUNT);
+    write_data_float_table(out, "walk_draw_h", walk_draw_h, WALK_FRAME_COUNT);
+    write_data_float_table(out, "walk_ox", walk_ox, WALK_FRAME_COUNT);
+    write_data_float_table(out, "walk_oy", walk_oy, WALK_FRAME_COUNT);
+    write_data_float_table(out, "jump_draw_w", jump_draw_w, 4);
+    write_data_float_table(out, "jump_draw_h", jump_draw_h, 4);
+    write_data_float_table(out, "jump_ox", jump_ox, 4);
+    write_data_float_table(out, "jump_oy", jump_oy, 4);
+    write_data_float_table(out, "slash_draw_w", slash_draw_w, 4);
+    write_data_float_table(out, "slash_draw_h", slash_draw_h, 4);
+    write_data_float_table(out, "slash_ox", slash_ox, 4);
+    write_data_float_table(out, "slash_oy", slash_oy, 4);
+    write_data_int_table(out, "slash_src_w", slash_src_w, 4);
+    write_data_float_table(out, "dash_draw_w", dash_draw_w, 1);
+    write_data_float_table(out, "dash_draw_h", dash_draw_h, 1);
+    write_data_float_table(out, "dash_ox", dash_ox, 1);
+    write_data_float_table(out, "dash_oy", dash_oy, 1);
+}
+
+static bool save_tune_data(const char *path)
+{
+    FILE *out = fopen(path, "w");
+    if (!out) {
+        fprintf(stderr, "Could not write tuning data to %s\n", path);
+        return false;
+    }
+    write_tune_data_tables(out);
+    fclose(out);
+    fprintf(stderr, "Saved tuning data to %s\n", path);
+    return true;
+}
+
+static void load_tune_data(const char *path)
+{
+    char line[512];
+    FILE *in = fopen(path, "r");
+    int loaded = 0;
+    if (!in) {
+        return;
+    }
+    while (fgets(line, sizeof(line), in)) {
+        char *token = strtok(line, " \t\r\n");
+        char *count_token;
+        int file_count;
+        float *float_values = NULL;
+        int *int_values = NULL;
+        int table_count = 0;
+        if (!token || token[0] == '#') {
+            continue;
+        }
+        count_token = strtok(NULL, " \t\r\n");
+        if (!count_token) {
+            continue;
+        }
+        file_count = atoi(count_token);
+        if (tune_float_table(token, &float_values, &table_count)) {
+            int n = file_count < table_count ? file_count : table_count;
+            for (int i = 0; i < n; ++i) {
+                char *value = strtok(NULL, " \t\r\n");
+                if (!value) {
+                    break;
+                }
+                float_values[i] = strtof(value, NULL);
+                loaded++;
+            }
+        } else if (tune_int_table(token, &int_values, &table_count)) {
+            int n = file_count < table_count ? file_count : table_count;
+            for (int i = 0; i < n; ++i) {
+                char *value = strtok(NULL, " \t\r\n");
+                if (!value) {
+                    break;
+                }
+                int_values[i] = atoi(value);
+                loaded++;
+            }
+        }
+    }
+    fclose(in);
+    if (loaded > 0) {
+        fprintf(stderr, "Loaded %d tuning values from %s\n", loaded, path);
+    }
+}
+
+static void dump_float_table(FILE *out, const char *name, float *values, int count)
+{
+    fprintf(out, "static float %s[] = { ", name);
+    for (int i = 0; i < count; ++i) {
+        fprintf(out, "%.1ff%s", values[i], i == count - 1 ? " " : ", ");
+    }
+    fprintf(out, "};\n");
+}
+
+static void dump_int_table(FILE *out, const char *name, int *values, int count)
+{
+    fprintf(out, "static int %s[] = { ", name);
+    for (int i = 0; i < count; ++i) {
+        fprintf(out, "%d%s", values[i], i == count - 1 ? " " : ", ");
+    }
+    fprintf(out, "};\n");
+}
+
+static void dump_tune_tables(FILE *out)
+{
+    fprintf(out, "\n/* pilgrim animation tuning tables */\n");
+    dump_float_table(out, "idle_draw_w", idle_draw_w, 6);
+    dump_float_table(out, "idle_draw_h", idle_draw_h, 6);
+    dump_float_table(out, "idle_ox", idle_ox, 6);
+    dump_float_table(out, "idle_oy", idle_oy, 6);
+    dump_int_table(out, "idle_src_w", idle_src_w, 6);
+    dump_int_table(out, "walk_src_x", walk_src_x, WALK_FRAME_COUNT);
+    dump_int_table(out, "walk_src_w", walk_src_w, WALK_FRAME_COUNT);
+    dump_float_table(out, "walk_draw_w", walk_draw_w, WALK_FRAME_COUNT);
+    dump_float_table(out, "walk_draw_h", walk_draw_h, WALK_FRAME_COUNT);
+    dump_float_table(out, "walk_ox", walk_ox, WALK_FRAME_COUNT);
+    dump_float_table(out, "walk_oy", walk_oy, WALK_FRAME_COUNT);
+    dump_float_table(out, "jump_draw_w", jump_draw_w, 4);
+    dump_float_table(out, "jump_draw_h", jump_draw_h, 4);
+    dump_float_table(out, "jump_ox", jump_ox, 4);
+    dump_float_table(out, "jump_oy", jump_oy, 4);
+    dump_float_table(out, "slash_draw_w", slash_draw_w, 4);
+    dump_float_table(out, "slash_draw_h", slash_draw_h, 4);
+    dump_float_table(out, "slash_ox", slash_ox, 4);
+    dump_float_table(out, "slash_oy", slash_oy, 4);
+    dump_int_table(out, "slash_src_w", slash_src_w, 4);
+    dump_float_table(out, "dash_draw_w", dash_draw_w, 1);
+    dump_float_table(out, "dash_draw_h", dash_draw_h, 1);
+    dump_float_table(out, "dash_ox", dash_ox, 1);
+    dump_float_table(out, "dash_oy", dash_oy, 1);
+    fprintf(out, "/* end pilgrim animation tuning tables */\n\n");
+}
+
+static bool export_tune_tables(const char *path)
+{
+    FILE *out = fopen(path, "w");
+    if (!out) {
+        fprintf(stderr, "Could not write C tuning tables to %s\n", path);
+        return false;
+    }
+    dump_tune_tables(out);
+    fclose(out);
+    fprintf(stderr, "Exported C tuning tables to %s\n", path);
+    return true;
 }
 
 static void reset_tune_frame(void)
@@ -1112,7 +1363,7 @@ static void draw_tune_overlay(void)
     }
     draw_text(10, 46, "1-5 anim  [/] frame  arrows nudge", (Color){ 150, 160, 170 });
     draw_text(10, 60, "+/- scale  Z/X width  C/V height", (Color){ 150, 160, 170 });
-    draw_text(10, 74, "Q/E crop  O reset current frame  P dump", (Color){ 150, 160, 170 });
+    draw_text(10, 74, "Q/E crop  O reset  S save  L load  P export", (Color){ 150, 160, 170 });
     glPopMatrix();
 }
 
@@ -1418,7 +1669,7 @@ static void draw_player(void)
             draw_y_offset = 0.0f;
         } else if (fabsf(player.vx) > 8.0f) {
             if (walk_texture.ready) {
-                int f = forced_walk_frame >= 0 ? forced_walk_frame % 10 : ((int)(player.anim_time / WALK_FRAME_SECONDS)) % 10;
+                int f = forced_walk_frame >= 0 ? forced_walk_frame % WALK_FRAME_COUNT : ((int)(player.anim_time / WALK_FRAME_SECONDS)) % WALK_FRAME_COUNT;
                 src = HERO_WALK_SMOOTH_FRAMES[f];
                 src.x += walk_src_x[f];
                 src.w = walk_src_w[f];
@@ -1686,8 +1937,13 @@ static void key_down(unsigned char key, int x, int y)
             }
         } else if (key == 'o' || key == 'O') {
             reset_tune_frame();
+        } else if (key == 's' || key == 'S') {
+            save_tune_data(tune_file_path);
+        } else if (key == 'l' || key == 'L') {
+            load_tune_data(tune_file_path);
         } else if (key == 'p' || key == 'P') {
-            dump_tune_tables();
+            dump_tune_tables(stderr);
+            export_tune_tables(tune_export_path);
         } else {
             keys[key] = true;
         }
@@ -1789,6 +2045,15 @@ int main(int argc, char **argv)
     }
 
     reshape(VIEW_W * SCALE, VIEW_H * SCALE);
+    const char *tune_file_env = getenv("PILGRIM_TUNE_FILE");
+    if (tune_file_env && tune_file_env[0] != '\0') {
+        tune_file_path = tune_file_env;
+    }
+    const char *tune_export_env = getenv("PILGRIM_TUNE_EXPORT");
+    if (tune_export_env && tune_export_env[0] != '\0') {
+        tune_export_path = tune_export_env;
+    }
+    load_tune_data(tune_file_path);
     capture_script = getenv("PILGRIM_SCRIPT");
     const char *capture_frame_env = getenv("PILGRIM_CAPTURE_FRAME");
     if (capture_frame_env) {

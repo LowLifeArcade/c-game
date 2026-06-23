@@ -99,14 +99,14 @@ for facing in ("right", "left"):
         w, h, data = read_ppm(out_dir / f"{facing}_sample_{sample}.ppm")
         bounds = sprite_bounds(w, h, data)
         minx, maxx, miny, maxy, green = bounds
-        rows.append((facing, sample, minx, maxx, miny, maxy, (minx + maxx) / 2.0, green))
+        rows.append((facing, sample, minx, maxx, miny, maxy, (minx + maxx) / 2.0, maxx - minx + 1, green))
         images.append(scale2(*crop(w, h, data, bounds)))
 
 summary_path = out_dir / "walk_observe.tsv"
 with summary_path.open("w", encoding="utf-8") as f:
-    f.write("facing\tsim_frame\tminx\tmaxx\tminy\tmaxy\tcenter_x\tgreen\n")
+    f.write("facing\tsim_frame\tminx\tmaxx\tminy\tmaxy\tcenter_x\twidth\tgreen\n")
     for row in rows:
-        f.write("%s\t%d\t%d\t%d\t%d\t%d\t%.2f\t%d\n" % row)
+        f.write("%s\t%d\t%d\t%d\t%d\t%d\t%.2f\t%d\t%d\n" % row)
 
 cell_w = max(image[0] for image in images) + 16
 cell_h = max(image[1] for image in images) + 16
@@ -128,27 +128,29 @@ with contact_ppm.open("wb") as f:
     f.write(f"P6\n{sheet_w} {sheet_h}\n255\n".encode("ascii"))
     f.write(sheet)
 
-print("facing samples center_drift baseline_drift top_drift green")
+print("facing samples center_drift baseline_drift top_drift width_drift green")
 for facing in ("right", "left"):
     group = [row for row in rows if row[0] == facing]
     centers = [row[6] for row in group]
     baselines = [row[5] for row in group]
     tops = [row[4] for row in group]
-    green = sum(row[7] for row in group)
+    widths = [row[7] for row in group]
+    green = sum(row[8] for row in group)
     center_drift = max(centers) - min(centers)
     baseline_drift = max(baselines) - min(baselines)
     top_drift = max(tops) - min(tops)
-    print(f"{facing} {len(group)} {center_drift:.2f} {baseline_drift} {top_drift} {green}")
+    width_drift = max(widths) - min(widths)
+    print(f"{facing} {len(group)} {center_drift:.2f} {baseline_drift} {top_drift} {width_drift} {green}")
     if green:
         raise SystemExit(f"walk observation failed: {facing} chroma-key leak detected")
     if baseline_drift > 4:
         raise SystemExit(f"walk observation failed: {facing} baseline drift too high")
     if center_drift > 10:
         raise SystemExit(f"walk observation failed: {facing} center drift too high")
-    if top_drift < 2:
-        raise SystemExit(f"walk observation failed: {facing} leg raise articulation too low")
+    if width_drift < 8:
+        raise SystemExit(f"walk observation failed: {facing} step silhouette articulation too low")
     if top_drift > 5:
-        raise SystemExit(f"walk observation failed: {facing} leg raise articulation too exaggerated")
+        raise SystemExit(f"walk observation failed: {facing} upper-body bob too exaggerated")
 PY
 
 sips -s format png "$out_dir/walk_observe_contact.ppm" --out "$out_dir/walk_observe_contact.png" >/dev/null 2>&1 || true
