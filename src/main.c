@@ -1023,19 +1023,29 @@ static void tune_active_source(int **src_x, int **src_y, int **src_w, int **src_
     }
 }
 
-static void apply_source_crop(SrcRect *src, int crop_x, int crop_y, int crop_w, int crop_h)
+static void apply_source_crop(SrcRect *src, int crop_x, int crop_y, int crop_w, int crop_h, int texture_w, int texture_h)
 {
-    if (crop_x < 0) {
-        crop_x = 0;
+    int next_x = src->x + crop_x;
+    int next_y = src->y + crop_y;
+    if (crop_w < 1) {
+        crop_w = 1;
     }
-    if (crop_y < 0) {
-        crop_y = 0;
+    if (crop_h < 1) {
+        crop_h = 1;
     }
-    if (crop_x > src->w - 1) {
-        crop_x = src->w - 1;
+    if (next_x < 0) {
+        crop_w += next_x;
+        next_x = 0;
     }
-    if (crop_y > src->h - 1) {
-        crop_y = src->h - 1;
+    if (next_y < 0) {
+        crop_h += next_y;
+        next_y = 0;
+    }
+    if (next_x + crop_w > texture_w) {
+        crop_w = texture_w - next_x;
+    }
+    if (next_y + crop_h > texture_h) {
+        crop_h = texture_h - next_y;
     }
     if (crop_w < 1) {
         crop_w = 1;
@@ -1043,14 +1053,8 @@ static void apply_source_crop(SrcRect *src, int crop_x, int crop_y, int crop_w, 
     if (crop_h < 1) {
         crop_h = 1;
     }
-    if (crop_x + crop_w > src->w) {
-        crop_w = src->w - crop_x;
-    }
-    if (crop_y + crop_h > src->h) {
-        crop_h = src->h - crop_y;
-    }
-    src->x += crop_x;
-    src->y += crop_y;
+    src->x = next_x;
+    src->y = next_y;
     src->w = crop_w;
     src->h = crop_h;
 }
@@ -1535,6 +1539,18 @@ typedef enum {
     TRIM_BOTTOM
 } TrimEdge;
 
+static void tune_active_texture_size(int *texture_w, int *texture_h)
+{
+    Texture *texture = &player_texture;
+    if (tune_anim == TUNE_IDLE && idle_texture.ready) {
+        texture = &idle_texture;
+    } else if (tune_anim == TUNE_WALK && walk_texture.ready) {
+        texture = &walk_texture;
+    }
+    *texture_w = texture->ready ? texture->w : 4096;
+    *texture_h = texture->ready ? texture->h : 4096;
+}
+
 static bool adjust_tune_source_edge(TrimEdge edge, int delta)
 {
     float *draw_w;
@@ -1547,9 +1563,13 @@ static bool adjust_tune_source_edge(TrimEdge edge, int delta)
     int *src_h;
     int base_w;
     int base_h;
+    int texture_w;
+    int texture_h;
+    SrcRect base = tune_base_src_rect(tune_anim, tune_frame);
 
     tune_active_pose(&draw_w, &draw_h, &ox, &oy);
     tune_active_source(&src_x, &src_y, &src_w, &src_h, &base_w, &base_h);
+    tune_active_texture_size(&texture_w, &texture_h);
     if (!src_x || !src_y || !src_w || !src_h || *src_w <= 0 || *src_h <= 0) {
         return false;
     }
@@ -1559,7 +1579,7 @@ static bool adjust_tune_source_edge(TrimEdge edge, int delta)
             int next_x = *src_x + delta;
             int next_w = *src_w - delta;
             float pixels_to_world = *draw_w / (float)*src_w;
-            if (next_x < 0 || next_w < 8 || next_x + next_w > base_w) {
+            if (base.x + next_x < 0 || next_w < 8 || base.x + next_x + next_w > texture_w) {
                 return false;
             }
             *src_x = next_x;
@@ -1571,7 +1591,7 @@ static bool adjust_tune_source_edge(TrimEdge edge, int delta)
         case TRIM_RIGHT: {
             int next_w = *src_w - delta;
             float pixels_to_world = *draw_w / (float)*src_w;
-            if (next_w < 8 || *src_x + next_w > base_w) {
+            if (next_w < 8 || base.x + *src_x + next_w > texture_w) {
                 return false;
             }
             *src_w = next_w;
@@ -1582,7 +1602,7 @@ static bool adjust_tune_source_edge(TrimEdge edge, int delta)
             int next_y = *src_y + delta;
             int next_h = *src_h - delta;
             float pixels_to_world = *draw_h / (float)*src_h;
-            if (next_y < 0 || next_h < 8 || next_y + next_h > base_h) {
+            if (base.y + next_y < 0 || next_h < 8 || base.y + next_y + next_h > texture_h) {
                 return false;
             }
             *src_y = next_y;
@@ -1594,7 +1614,7 @@ static bool adjust_tune_source_edge(TrimEdge edge, int delta)
         case TRIM_BOTTOM: {
             int next_h = *src_h - delta;
             float pixels_to_world = *draw_h / (float)*src_h;
-            if (next_h < 8 || *src_y + next_h > base_h) {
+            if (next_h < 8 || base.y + *src_y + next_h > texture_h) {
                 return false;
             }
             *src_h = next_h;
@@ -1606,23 +1626,25 @@ static bool adjust_tune_source_edge(TrimEdge edge, int delta)
     }
 }
 
-static void apply_runtime_source_crop(TuneAnim anim, int frame, SrcRect *src)
+static void apply_runtime_source_crop(TuneAnim anim, int frame, Texture *texture, SrcRect *src)
 {
+    int texture_w = texture->ready ? texture->w : 4096;
+    int texture_h = texture->ready ? texture->h : 4096;
     switch (anim) {
         case TUNE_IDLE:
-            apply_source_crop(src, idle_src_x[frame % 6], idle_src_y[frame % 6], idle_src_w[frame % 6], idle_src_h[frame % 6]);
+            apply_source_crop(src, idle_src_x[frame % 6], idle_src_y[frame % 6], idle_src_w[frame % 6], idle_src_h[frame % 6], texture_w, texture_h);
             break;
         case TUNE_WALK:
-            apply_source_crop(src, walk_src_x[frame % WALK_FRAME_COUNT], walk_src_y[frame % WALK_FRAME_COUNT], walk_src_w[frame % WALK_FRAME_COUNT], walk_src_h[frame % WALK_FRAME_COUNT]);
+            apply_source_crop(src, walk_src_x[frame % WALK_FRAME_COUNT], walk_src_y[frame % WALK_FRAME_COUNT], walk_src_w[frame % WALK_FRAME_COUNT], walk_src_h[frame % WALK_FRAME_COUNT], texture_w, texture_h);
             break;
         case TUNE_JUMP:
-            apply_source_crop(src, jump_src_x[frame % 4], jump_src_y[frame % 4], jump_src_w[frame % 4], jump_src_h[frame % 4]);
+            apply_source_crop(src, jump_src_x[frame % 4], jump_src_y[frame % 4], jump_src_w[frame % 4], jump_src_h[frame % 4], texture_w, texture_h);
             break;
         case TUNE_SLASH:
-            apply_source_crop(src, slash_src_x[frame % 4], slash_src_y[frame % 4], slash_src_w[frame % 4], slash_src_h[frame % 4]);
+            apply_source_crop(src, slash_src_x[frame % 4], slash_src_y[frame % 4], slash_src_w[frame % 4], slash_src_h[frame % 4], texture_w, texture_h);
             break;
         case TUNE_DASH:
-            apply_source_crop(src, dash_src_x[0], dash_src_y[0], dash_src_w[0], dash_src_h[0]);
+            apply_source_crop(src, dash_src_x[0], dash_src_y[0], dash_src_w[0], dash_src_h[0], texture_w, texture_h);
             break;
         default:
             break;
@@ -1645,27 +1667,27 @@ static void draw_tune_player(void)
             texture = idle_texture.ready ? &idle_texture : &player_texture;
             src = idle_texture.ready ? HERO_IDLE_BREATH_FRAMES[f] : HERO_IDLE_FRAMES[f % 4];
             if (idle_texture.ready) {
-                apply_source_crop(&src, idle_src_x[f], idle_src_y[f], idle_src_w[f], idle_src_h[f]);
+                apply_source_crop(&src, idle_src_x[f], idle_src_y[f], idle_src_w[f], idle_src_h[f], texture->w, texture->h);
             }
             break;
         case TUNE_WALK:
             texture = walk_texture.ready ? &walk_texture : &player_texture;
             src = walk_texture.ready ? HERO_WALK_SMOOTH_FRAMES[f] : HERO_WALK_FRAMES[f % 6];
             if (walk_texture.ready) {
-                apply_source_crop(&src, walk_src_x[f], walk_src_y[f], walk_src_w[f], walk_src_h[f]);
+                apply_source_crop(&src, walk_src_x[f], walk_src_y[f], walk_src_w[f], walk_src_h[f], texture->w, texture->h);
             }
             break;
         case TUNE_JUMP:
             src = HERO_JUMP_FRAMES[f];
-            apply_source_crop(&src, jump_src_x[f], jump_src_y[f], jump_src_w[f], jump_src_h[f]);
+            apply_source_crop(&src, jump_src_x[f], jump_src_y[f], jump_src_w[f], jump_src_h[f], texture->w, texture->h);
             break;
         case TUNE_SLASH:
             src = HERO_SLASH_FRAMES[f];
-            apply_source_crop(&src, slash_src_x[f], slash_src_y[f], slash_src_w[f], slash_src_h[f]);
+            apply_source_crop(&src, slash_src_x[f], slash_src_y[f], slash_src_w[f], slash_src_h[f], texture->w, texture->h);
             break;
         case TUNE_DASH:
             src = HERO_JUMP_FRAMES[1];
-            apply_source_crop(&src, dash_src_x[0], dash_src_y[0], dash_src_w[0], dash_src_h[0]);
+            apply_source_crop(&src, dash_src_x[0], dash_src_y[0], dash_src_w[0], dash_src_h[0], texture->w, texture->h);
             break;
         default:
             break;
@@ -1952,8 +1974,8 @@ static void draw_player(void)
         if (idle_texture.ready) {
             int f = forced_idle_frame >= 0 ? forced_idle_frame % 6 : ((int)(player.anim_time / 0.22f)) % 6;
             src = HERO_IDLE_BREATH_FRAMES[f];
-            apply_runtime_source_crop(TUNE_IDLE, f, &src);
             draw_texture = &idle_texture;
+            apply_runtime_source_crop(TUNE_IDLE, f, draw_texture, &src);
             draw_w = idle_draw_w[f];
             draw_h = idle_draw_h[f];
             ox = idle_ox[f];
@@ -1963,8 +1985,8 @@ static void draw_player(void)
         if (forced_jump_frame >= 0) {
             int f = forced_jump_frame % 4;
             src = HERO_JUMP_FRAMES[f];
-            apply_runtime_source_crop(TUNE_JUMP, f, &src);
             draw_texture = &player_texture;
+            apply_runtime_source_crop(TUNE_JUMP, f, draw_texture, &src);
             draw_w = jump_draw_w[f];
             draw_h = jump_draw_h[f];
             ox = jump_ox[f];
@@ -1979,8 +2001,8 @@ static void draw_player(void)
                 f = 3;
             }
             src = HERO_SLASH_FRAMES[f];
-            apply_runtime_source_crop(TUNE_SLASH, f, &src);
             draw_texture = &player_texture;
+            apply_runtime_source_crop(TUNE_SLASH, f, draw_texture, &src);
             draw_w = slash_draw_w[f];
             draw_h = slash_draw_h[f];
             ox = slash_ox[f];
@@ -1988,8 +2010,8 @@ static void draw_player(void)
             draw_y_offset = 0.0f;
         } else if (player.landing_timer > 0.0f) {
             src = HERO_JUMP_FRAMES[3];
-            apply_runtime_source_crop(TUNE_JUMP, 3, &src);
             draw_texture = &player_texture;
+            apply_runtime_source_crop(TUNE_JUMP, 3, draw_texture, &src);
             draw_w = jump_draw_w[3];
             draw_h = jump_draw_h[3];
             ox = jump_ox[3];
@@ -2005,8 +2027,8 @@ static void draw_player(void)
                 f = 3;
             }
             src = HERO_JUMP_FRAMES[f];
-            apply_runtime_source_crop(TUNE_JUMP, f, &src);
             draw_texture = &player_texture;
+            apply_runtime_source_crop(TUNE_JUMP, f, draw_texture, &src);
             draw_w = jump_draw_w[f];
             draw_h = jump_draw_h[f];
             ox = jump_ox[f];
@@ -2014,8 +2036,8 @@ static void draw_player(void)
             draw_y_offset = 0.0f;
         } else if (player.backdash_timer > 0.0f) {
             src = HERO_JUMP_FRAMES[1];
-            apply_runtime_source_crop(TUNE_DASH, 0, &src);
             draw_texture = &player_texture;
+            apply_runtime_source_crop(TUNE_DASH, 0, draw_texture, &src);
             draw_w = dash_draw_w[0];
             draw_h = dash_draw_h[0];
             ox = dash_ox[0];
@@ -2025,7 +2047,7 @@ static void draw_player(void)
             if (walk_texture.ready) {
                 int f = forced_walk_frame >= 0 ? forced_walk_frame % WALK_FRAME_COUNT : ((int)(player.anim_time / WALK_FRAME_SECONDS)) % WALK_FRAME_COUNT;
                 src = HERO_WALK_SMOOTH_FRAMES[f];
-                apply_runtime_source_crop(TUNE_WALK, f, &src);
+                apply_runtime_source_crop(TUNE_WALK, f, &walk_texture, &src);
                 draw_w = walk_draw_w[f];
                 draw_h = walk_draw_h[f];
                 ox = walk_ox[f];
