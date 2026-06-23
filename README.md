@@ -1,100 +1,237 @@
-# Pilgrim of the Thorn
+<div align="center">
 
-A proof-of-concept Catholic gothic 2D platformer written in C. It uses OpenGL/GLUT so it can build on the local Mac without SDL or raylib.
+<img src="assets/cathedral_concept.png" alt="Pilgrim of the Thorn — a moonlit gothic cathedral city" width="100%">
 
-## Build and Run
+# ✠ Pilgrim of the Thorn
+
+### A Catholic gothic action-platformer of prayer, relic, and blade.
+
+_Walk through ruined cloisters, moonlit belfries, and candle-bright chapels<br>
+as a pilgrim-knight enters a city that has forgotten grace._
+
+<p>
+  <img alt="C99" src="https://img.shields.io/badge/C-99-315f77?style=for-the-badge&logo=c&logoColor=f4ead0">
+  <img alt="OpenGL" src="https://img.shields.io/badge/OpenGL-2D-315f77?style=for-the-badge&logo=opengl&logoColor=f4ead0">
+  <img alt="macOS" src="https://img.shields.io/badge/macOS-DMG-d8aa55?style=for-the-badge&logo=apple&logoColor=180b08">
+  <img alt="Cloudflare Workers" src="https://img.shields.io/badge/Cloudflare-Workers-b96a31?style=for-the-badge&logo=cloudflare&logoColor=fff7dc">
+</p>
+
+[Build the game](#build-the-game) · [Explore the project](#inside-the-abbey) · [Run the website](#the-website) · [Tune animations](#animation-workbench) · [Code style](STYLE_GUIDE.md)
+
+</div>
+
+---
+
+## The vow
+
+**Pilgrim of the Thorn** is a playable proof of concept built in C with OpenGL and GLUT. It reaches for the deliberate movement of classic gothic platformers while grounding its world in Catholic material culture: relics, confession, sacred architecture, candlelight, and the stubborn presence of beauty amid ruin.
+
+This is not dark fantasy with incense painted over it. The Church shapes the world.
+
+| Relics have weight                                                                | Prayer is defiance                                                            | Beauty still wounds                                                                  |
+| :-------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| Holy objects are memory, obligation, and the presence of saints in a city of ash. | Candlelight, chant, and confession resist decay as surely as sharpened steel. | Stained glass and carved stone are signs that even ruin can be ordered toward glory. |
+
+<br>
+
+<img src="assets/cathedral_background.png" alt="Pixel-art cathedral ruins beneath a moonlit sky" width="100%">
+
+## The pilgrimage
+
+The current prototype is a side-scrolling journey through layered cathedral ruins, reliquary alcoves, ivy-wrapped arches, moonlit towers, and pools of votive gold.
+
+- Fast ground acceleration with restrained air control
+- Variable jump height and gravity-heavy falls
+- Short backdash for deliberate spacing
+- Committed sword strikes with readable timing
+- A smooth side-scrolling camera across several screens
+- Authored idle, walk, jump, slash, and dash animation states
+- Live sprite placement and trim tools for visual tuning
+
+> The hero is not a swaggering demon hunter. He is a penitent with a lantern.
+
+## Controls
+
+| Action                  | Keyboard                                     |
+| :---------------------- | :------------------------------------------- |
+| Walk                    | `A` / `D` or arrow keys                      |
+| Jump                    | `Space`, `W`, or ↑ — hold briefly for height |
+| Sword slash             | `J`                                          |
+| Backdash                | `K`                                          |
+| Return to the beginning | `R`                                          |
+| Leave the pilgrimage    | `Esc`                                        |
+
+## Build the game
+
+### macOS
+
+The native build uses the OpenGL, GLUT, Cocoa, Core Graphics, and ImageIO frameworks included with macOS.
 
 ```sh
 make
 make run
-make tune
+```
+
+Useful commands:
+
+```sh
+make tune            # Run with the live animation-tuning overlay
+make package-macos   # Build a versioned app, DMG, and zip
 ./build/pilgrim --version
 ```
 
-The game uses semantic versioning from the root `VERSION` file. Changing that file rebuilds the C executable with the new version and carries the same version into the macOS app, DMG, zip, and website.
+Packaged releases are written to `dist/macos/`:
 
-## Package for macOS
-
-```sh
-make package-macos
+```text
+Pilgrim-of-the-Thorn-macOS-v0.0.1.dmg
+Pilgrim-of-the-Thorn-macOS-app-v0.0.1.zip
 ```
 
-This creates versioned artifacts such as `dist/macos/Pilgrim-of-the-Thorn-macOS-v0.3.0.dmg` and `dist/macos/Pilgrim-of-the-Thorn-macOS-app-v0.3.0.zip`. Open the DMG and drag `Pilgrim of the Thorn.app` onto the `Applications` shortcut. The app bundle includes the executable, a concept-art app icon, and all required `assets/` files.
+The semantic version lives in [`VERSION`](VERSION). Changing it rebuilds the executable and carries the same version into the app bundle, downloadable DMG, zip archive, and website.
 
-## Deploy the Website and Current Game Build
+### Linux
 
-From either the project root or `web/`:
+Install a C compiler, OpenGL development libraries, and FreeGLUT, then run:
+
+```sh
+make
+make run
+```
+
+## The website
+
+The companion landing page translates the same world into parchment, gold, cathedral blue, and deep night. It is built with Vite and TypeScript and served by a Cloudflare Worker.
+
+```sh
+npm --prefix web install
+npm --prefix web run dev
+```
+
+The site sync step draws directly from the game:
+
+- Concept and background art are copied from `assets/`
+- The walk cycle is chroma-keyed for presentation
+- The current versioned macOS DMG is copied into the download area
+- `/api/download` redirects to the matching release artifact
+
+To build the game, package the current release, build the site, and deploy:
 
 ```sh
 npm run deploy
 ```
 
-The root command delegates to the web project. Both entry points rebuild the C game, package the current semantic version, copy that versioned DMG into the website, build the Vite/Worker app, and deploy it with Wrangler.
+Wrangler authentication and Cloudflare access are required for deployment.
 
-To capture and sanity-check the main animation states:
+## Inside the abbey
 
-```sh
-make check-animations
-make analyze-idle
-make analyze-walk
-make observe-walk
-make review-walk
-make analyze-jump
-make analyze-proportions
+```text
+.
+├── assets/              Source art, sprite sheets, and tuning data
+├── scripts/             Packaging and animation-analysis tools
+├── src/main.c           Game, renderer, physics, and tuning interface
+├── web/
+│   ├── scripts/         Asset synchronization
+│   ├── src/             Landing page and visual system
+│   └── worker/          Download routing
+├── Makefile             Native build and analysis commands
+└── VERSION              Shared semantic version
 ```
 
-## Controls
+The prototype intentionally keeps its native heart compact: the game is currently implemented in a single C source file, with supporting shell and Python tools around it for packaging and animation review.
 
-- `A` / `D` or arrow keys: move
-- `Space`, `W`, or up arrow: jump, hold briefly for a taller jump
-- `J`: sword slash
-- `K`: backdash
-- `R`: reset to start
-- `Esc`: quit
+## Animation workbench
 
-## Animation Tuning Mode
+Run the game in tuning mode to adjust sprite placement while the actual movement, attacks, and camera are active:
 
-Run `make tune` or `PILGRIM_TUNE=1 make run` to play the game with the live sprite tuning overlay enabled. The current animation tables are edited in memory while you move, jump, dash, and attack, so placement changes can be judged against real gameplay motion. For a frozen isolated frame bench, run `PILGRIM_TUNE=1 PILGRIM_ISOLATE_PLAYER=1 ./build/pilgrim`.
+```sh
+make tune
+```
 
-The game loads sprite placement from `assets/pilgrim_tuning.txt` on startup. In tuning mode, press `S` to save the current values back to that file, or set `PILGRIM_TUNE_FILE=/path/to/file.txt` to work against a different tuning file.
+Tuning values load from `assets/pilgrim_tuning.txt`.
 
-- `1` / `2` / `3` / `4` / `5`: edit idle, walk, jump, slash, or dash.
-- `[` / `]`: select the previous or next frame in that animation.
-- Arrow keys: nudge the selected frame. Hold Shift for 0.1-unit nudges or Control for 2-unit nudges.
-- `T`: enter or leave trim mode for the selected frame.
-- Trim mode arrow keys: trim the left, right, top, or bottom source edge. Hold Shift to restore outward beyond the original source box or Control for 4-pixel steps.
-- `+` / `-`: scale width and height together.
-- `Z` / `X`: shrink or grow width only.
-- `C` / `V`: shrink or grow height only.
-- `O`: reset the selected frame to the build's default tuning values.
-- `S`: save all current tuning tables to the active tuning file.
-- `L`: reload the active tuning file.
-- `P`: print the current tuning tables to stderr and export C declarations to `/tmp/pilgrim_tuning_tables.c`, or to `PILGRIM_TUNE_EXPORT=/path/to/tables.c`.
-- Optional capture helpers: set `PILGRIM_TUNE_ANIM=idle|walk|jump|slash|dash` and `PILGRIM_TUNE_FRAME=0..N` to open tuning mode on a specific frame.
+| Key                | Tuning action                           |
+| :----------------- | :-------------------------------------- |
+| `1`–`5`            | Select idle, walk, jump, slash, or dash |
+| `[` / `]`          | Select previous or next animation frame |
+| Arrow keys         | Nudge the selected frame                |
+| `Shift` + arrows   | Fine 0.1-unit nudges                    |
+| `Control` + arrows | Coarse 2-unit nudges                    |
+| `T`                | Toggle source-image trim mode           |
+| `+` / `-`          | Scale width and height                  |
+| `Z` / `X`          | Shrink or grow width                    |
+| `C` / `V`          | Shrink or grow height                   |
+| `O`                | Restore the selected frame's defaults   |
+| `S`                | Save all tuning tables                  |
+| `L`                | Reload tuning from disk                 |
+| `P`                | Print and export C tuning declarations  |
 
-## Prototype Notes
+For a frozen frame bench:
 
-- The map spans several horizontal screens with a side-scrolling camera.
-- Physics are tuned toward a Castlevania: Symphony of the Night-like platformer feel: quick ground acceleration, restrained air control, variable jump height, gravity-heavy falls, short backdash, light attack commitment, and smoothed camera follow.
-- The visual direction is Catholic gothic: cloisters, cathedral arches, stained glass, candlelight, reliquary pickups, and a pilgrim-knight protagonist.
-- `assets/cathedral_background.png` is a generated parallax background made for runtime use.
-- `assets/midground_sheet_source.png` is a generated mid-parallax atlas with bell tower and ruined cloister elements.
-- `assets/foreground_sheet_source.png` is a generated foreground atlas. The C loader keys out the green background at runtime.
-- `assets/pilgrim_sheet_expanded_source.png` is the fallback/generated action sheet for jump, fall, slash, dash, and older idle/walk panels.
-- `assets/pilgrim_idle_breath_source.png` is a dedicated 6-frame authored breathing cycle with planted feet.
-- `assets/pilgrim_walk_cycle_source.png` is a dedicated 4-frame walk-cycle sheet: planted stride contact, rear foot lift, forward swing, descending pre-contact.
-- Set `PILGRIM_CAPTURE=/tmp/frame.ppm make run` to dump the first rendered frame for visual checks.
-- For animation checks, combine capture with `PILGRIM_SCRIPT=walk`, `PILGRIM_SCRIPT=jump`, `PILGRIM_SCRIPT=attack`, or `PILGRIM_SCRIPT=dash`, plus `PILGRIM_CAPTURE_FRAME=90` to capture after simulated input has advanced.
-- Set `PILGRIM_TELEMETRY=/tmp/pilgrim.tsv` with a scripted run to log frame-by-frame position, velocity, grounded state, air time, and camera position.
-- `make check-animations` captures idle, a four-frame walk-cycle sample, jump, slash, and dash frames into `/tmp/pilgrim_animation_check` and checks for obvious unkeyed chroma-green sprite leaks.
-- `make analyze-idle` captures isolated idle breathing frames and checks planted-foot baseline/body-center drift.
-- `make analyze-walk` captures isolated walk frames and checks planted baseline, body-center drift, and raised-step articulation.
-- `make observe-walk` captures a timed scripted walk strip into `/tmp/pilgrim_walk_observe` so the slower articulated walk cadence can be reviewed frame-by-frame.
-- `make review-walk` captures the current walk and writes visual review artifacts into `/tmp/pilgrim_walk_review`: an animated loop, numbered contact sheet, onion-skin overlay, guide overlay, metrics table, and matching Richter reference artifacts when the downloaded Richter sheet is present.
-- `make analyze-jump` captures isolated jump frames and checks drift, edge margin, and chroma-key leaks.
-- `make analyze-proportions` captures isolated idle, walk, jump, slash, and dash states and checks cross-state scale, centerline drift, and chroma-key leaks.
-- Set `PILGRIM_FORCE_IDLE_FRAME=0..5` to capture a specific authored breathing panel.
-- Set `PILGRIM_FORCE_WALK_FRAME=0..3` with `PILGRIM_SCRIPT=walk` to capture a specific walk-cycle panel for frame-by-frame review.
-- Set `RICHTER_SHEET=/path/to/sheet.png` and optionally edit the `--reference-crop x,y,w,h` in `scripts/review_walk.sh` to compare against a different reference walk row.
-- Set `PILGRIM_FORCE_JUMP_FRAME=0..3` to capture a specific jump-cycle panel for frame-by-frame review.
-- Set `PILGRIM_FORCE_FACING=-1` or `1` to capture left- or right-facing animation frames.
+```sh
+PILGRIM_TUNE=1 PILGRIM_ISOLATE_PLAYER=1 ./build/pilgrim
+```
+
+Optional environment controls include:
+
+```sh
+PILGRIM_TUNE_ANIM=idle|walk|jump|slash|dash
+PILGRIM_TUNE_FRAME=0..N
+PILGRIM_FORCE_FACING=-1|1
+PILGRIM_TUNE_FILE=/path/to/pilgrim_tuning.txt
+PILGRIM_TUNE_EXPORT=/path/to/tables.c
+```
+
+## Visual review tools
+
+The repository includes repeatable capture and analysis passes for checking the authored animation:
+
+| Command                    | Purpose                                                       |
+| :------------------------- | :------------------------------------------------------------ |
+| `make check-animations`    | Capture the primary states and detect chroma-green leaks      |
+| `make analyze-idle`        | Check planted feet, baseline, and body-center drift           |
+| `make analyze-walk`        | Check contact, raised steps, baseline, and center drift       |
+| `make observe-walk`        | Produce a timed walk strip for frame-by-frame review          |
+| `make review-walk`         | Render a loop, contact sheet, onion skin, guides, and metrics |
+| `make analyze-jump`        | Check drift, margins, and chroma-key leaks                    |
+| `make analyze-proportions` | Compare scale and centerlines across all states               |
+
+Scripted captures can be driven with environment variables:
+
+```sh
+PILGRIM_SCRIPT=walk PILGRIM_CAPTURE_FRAME=90 \
+PILGRIM_CAPTURE=/tmp/pilgrim-frame.ppm make run
+```
+
+Telemetry is also available:
+
+```sh
+PILGRIM_SCRIPT=jump \
+PILGRIM_TELEMETRY=/tmp/pilgrim.tsv make run
+```
+
+<details>
+<summary><strong>Authored art pipeline</strong></summary>
+
+The runtime and website share the same source material:
+
+- `cathedral_background.png` — parallax cathedral environment
+- `midground_sheet_source.png` — bell tower and ruined cloister atlas
+- `foreground_sheet_source.png` — foreground atlas, chroma-keyed at runtime
+- `pilgrim_sheet_expanded_source.png` — action-sheet fallback
+- `pilgrim_idle_breath_source.png` — six-frame planted breathing cycle
+- `pilgrim_walk_cycle_source.png` — four-frame authored walk cycle
+- `pilgrim_tuning.txt` — live placement and trim values
+
+Individual authored frames can be selected with `PILGRIM_FORCE_IDLE_FRAME`, `PILGRIM_FORCE_WALK_FRAME`, or `PILGRIM_FORCE_JUMP_FRAME`.
+
+</details>
+
+---
+
+<div align="center">
+
+### The bell is still ringing.
+
+**Take up the lantern.**
+
+</div>

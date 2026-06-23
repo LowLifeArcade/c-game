@@ -1,9 +1,9 @@
 {
-  "name": "pilgrim-of-the-thorn",
-  "private": true,
-  "scripts": {
-    "build": "make",
-    "package:macos": "make package-macos",
-    "deploy": "npm --prefix web run deploy"
-  }
+    "name": "pilgrim-of-the-thorn",
+    "private": true,
+    "scripts": {
+        "build": "make",
+        "package:macos": "make package-macos",
+        "deploy": "npm --prefix web run deploy"
+    }
 }

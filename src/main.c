@@ -493,6 +493,7 @@ static bool solid_at(int tx, int ty)
     if (tx < 0 || ty < 0 || tx >= MAP_W || ty >= MAP_H) {
         return false;
     }
+
     return map_rows[ty][tx] == '#';
 }
 
@@ -519,10 +520,12 @@ static float approach(float v, float target, float delta)
         v += delta;
         return v > target ? target : v;
     }
+
     if (v > target) {
         v -= delta;
         return v < target ? target : v;
     }
+
     return v;
 }
 
@@ -581,6 +584,7 @@ static void update_particles(float dt)
         if (particles[i].life <= 0.0f) {
             continue;
         }
+
         particles[i].life -= dt;
         particles[i].x += particles[i].vx * dt;
         particles[i].y += particles[i].vy * dt;
@@ -594,6 +598,7 @@ static void draw_particles(void)
         if (particles[i].life <= 0.0f) {
             continue;
         }
+
         float t = particles[i].life / particles[i].max_life;
         unsigned char a = (unsigned char)(190.0f * t);
         rect_alpha(particles[i].x, particles[i].y, particles[i].size * (1.0f + (1.0f - t)), particles[i].size, particles[i].color, a);
@@ -605,6 +610,7 @@ static void write_telemetry(void)
     if (!telemetry_file) {
         return;
     }
+
     fprintf(telemetry_file, "%d %.3f %.3f %.3f %.3f %d %.3f %.3f\n",
         sim_frame, player.x, player.y, player.vx, player.vy, player.grounded ? 1 : 0, player.air_time, camera_x);
     fflush(telemetry_file);
@@ -623,18 +629,23 @@ static bool scripted_key(unsigned char key)
     if (!capture_script) {
         return false;
     }
+
     if (strcmp(capture_script, "walk") == 0) {
         return key == 'd' && sim_frame < 140;
     }
+
     if (strcmp(capture_script, "jump") == 0) {
         return key == 'd' || (key == ' ' && sim_frame >= 10 && sim_frame < 23);
     }
+
     if (strcmp(capture_script, "attack") == 0) {
         return key == 'j' && sim_frame == 18;
     }
+
     if (strcmp(capture_script, "dash") == 0) {
         return (key == 'd' && sim_frame < 18) || (key == 'k' && sim_frame == 24);
     }
+
     return false;
 }
 
@@ -672,6 +683,7 @@ static void move_x(float dx)
     } else if (dx < 0) {
         player.x = floorf(player.x / TILE + 1) * TILE + 0.01f;
     }
+
     player.vx = 0;
 }
 
@@ -691,6 +703,7 @@ static void move_y(float dy)
     } else if (dy < 0) {
         player.y = floorf(player.y / TILE + 1) * TILE + 0.01f;
     }
+
     player.vy = 0;
 }
 
@@ -732,9 +745,11 @@ static void update(float dt)
     if (keys[27]) {
         exit(0);
     }
+
     if (!capture_script && (jd || ad || dd || input_axis() != 0)) {
         player_interacted = true;
     }
+
     if (keys['r'] || keys['R']) {
         reset_player();
     }
@@ -742,11 +757,13 @@ static void update(float dt)
     if (jd && !prev_jump_down) {
         player.jump_buffer = 0.11f;
     }
+
     if (ad && !prev_attack_down && player.attack_timer <= 0.0f) {
         player.attack_timer = 0.34f;
         player.attack_age = 0.0f;
         spawn_slash_sparks(player.x + 5.0f, player.y + 21.0f, player.facing);
     }
+
     if (dd && !prev_dash_down && player.backdash_timer <= 0.0f) {
         player.backdash_timer = 0.22f;
         player.vx = -player.facing * 132.0f;
@@ -763,6 +780,7 @@ static void update(float dt)
     if (player.attack_timer > 0.0f) {
         player.attack_age += dt;
     }
+
     player.attack_timer = fmaxf(0, player.attack_timer - dt);
     player.backdash_timer = fmaxf(0, player.backdash_timer - dt);
     player.landing_timer = fmaxf(0, player.landing_timer - dt);
@@ -806,9 +824,11 @@ static void update(float dt)
     if (fabsf(player.vy) < 34.0f && !player.grounded) {
         gravity *= 0.82f;
     }
+
     if (!jd && player.vy < -58.0f) {
         player.vy = approach(player.vy, -58.0f, 860.0f * dt);
     }
+
     player.vy += gravity * dt;
     if (player.vy > 286.0f) {
         player.vy = 286.0f;
@@ -826,15 +846,18 @@ static void update(float dt)
     } else {
         player.air_time += dt;
     }
+
     if (fabsf(player.vx) > 4.0f && player.grounded && player.backdash_timer <= 0.0f) {
         float walk_rate = WALK_ANIM_BASE_RATE + fabsf(player.vx) / WALK_ANIM_SPEED_SCALE;
         if (walk_rate > WALK_ANIM_MAX_RATE) {
             walk_rate = WALK_ANIM_MAX_RATE;
         }
+
         player.anim_time += dt * walk_rate;
     } else {
         player.anim_time += dt;
     }
+
     sim_frame++;
     update_particles(dt);
 
@@ -852,22 +875,27 @@ static void update(float dt)
     } else if (input_axis() != 0) {
         desired_lookahead = player.facing * 14.0f;
     }
+
     if (player.backdash_timer > 0.0f) {
         desired_lookahead *= 0.35f;
     }
+
     camera_lookahead += (desired_lookahead - camera_lookahead) * fminf(1.0f, 5.5f * dt);
 
     target_camera_x = player.x - VIEW_W * 0.45f + camera_lookahead;
     if (target_camera_x < 0) {
         target_camera_x = 0;
     }
+
     if (target_camera_x > max_camera) {
         target_camera_x = max_camera;
     }
+
     camera_x += (target_camera_x - camera_x) * fminf(1.0f, 9.5f * dt);
     if (fabsf(camera_x - target_camera_x) < 0.05f) {
         camera_x = target_camera_x;
     }
+
     write_telemetry();
 }
 
@@ -909,21 +937,27 @@ static TuneAnim tune_anim_from_name(const char *name)
     if (!name) {
         return tune_anim;
     }
+
     if (strcmp(name, "idle") == 0) {
         return TUNE_IDLE;
     }
+
     if (strcmp(name, "walk") == 0) {
         return TUNE_WALK;
     }
+
     if (strcmp(name, "jump") == 0) {
         return TUNE_JUMP;
     }
+
     if (strcmp(name, "slash") == 0 || strcmp(name, "attack") == 0) {
         return TUNE_SLASH;
     }
+
     if (strcmp(name, "dash") == 0) {
         return TUNE_DASH;
     }
+
     return tune_anim;
 }
 
@@ -1034,29 +1068,37 @@ static void apply_source_crop(SrcRect *src, int crop_x, int crop_y, int crop_w, 
     if (crop_w < 1) {
         crop_w = 1;
     }
+
     if (crop_h < 1) {
         crop_h = 1;
     }
+
     if (next_x < 0) {
         crop_w += next_x;
         next_x = 0;
     }
+
     if (next_y < 0) {
         crop_h += next_y;
         next_y = 0;
     }
+
     if (next_x + crop_w > texture_w) {
         crop_w = texture_w - next_x;
     }
+
     if (next_y + crop_h > texture_h) {
         crop_h = texture_h - next_y;
     }
+
     if (crop_w < 1) {
         crop_w = 1;
     }
+
     if (crop_h < 1) {
         crop_h = 1;
     }
+
     src->x = next_x;
     src->y = next_y;
     src->w = crop_w;
@@ -1070,101 +1112,121 @@ static bool tune_float_table(const char *name, float **values, int *count)
         *count = 6;
         return true;
     }
+
     if (strcmp(name, "idle_draw_h") == 0) {
         *values = idle_draw_h;
         *count = 6;
         return true;
     }
+
     if (strcmp(name, "idle_ox") == 0) {
         *values = idle_ox;
         *count = 6;
         return true;
     }
+
     if (strcmp(name, "idle_oy") == 0) {
         *values = idle_oy;
         *count = 6;
         return true;
     }
+
     if (strcmp(name, "walk_draw_w") == 0) {
         *values = walk_draw_w;
         *count = WALK_FRAME_COUNT;
         return true;
     }
+
     if (strcmp(name, "walk_draw_h") == 0) {
         *values = walk_draw_h;
         *count = WALK_FRAME_COUNT;
         return true;
     }
+
     if (strcmp(name, "walk_ox") == 0) {
         *values = walk_ox;
         *count = WALK_FRAME_COUNT;
         return true;
     }
+
     if (strcmp(name, "walk_oy") == 0) {
         *values = walk_oy;
         *count = WALK_FRAME_COUNT;
         return true;
     }
+
     if (strcmp(name, "jump_draw_w") == 0) {
         *values = jump_draw_w;
         *count = 4;
         return true;
     }
+
     if (strcmp(name, "jump_draw_h") == 0) {
         *values = jump_draw_h;
         *count = 4;
         return true;
     }
+
     if (strcmp(name, "jump_ox") == 0) {
         *values = jump_ox;
         *count = 4;
         return true;
     }
+
     if (strcmp(name, "jump_oy") == 0) {
         *values = jump_oy;
         *count = 4;
         return true;
     }
+
     if (strcmp(name, "slash_draw_w") == 0) {
         *values = slash_draw_w;
         *count = 4;
         return true;
     }
+
     if (strcmp(name, "slash_draw_h") == 0) {
         *values = slash_draw_h;
         *count = 4;
         return true;
     }
+
     if (strcmp(name, "slash_ox") == 0) {
         *values = slash_ox;
         *count = 4;
         return true;
     }
+
     if (strcmp(name, "slash_oy") == 0) {
         *values = slash_oy;
         *count = 4;
         return true;
     }
+
     if (strcmp(name, "dash_draw_w") == 0) {
         *values = dash_draw_w;
         *count = 1;
         return true;
     }
+
     if (strcmp(name, "dash_draw_h") == 0) {
         *values = dash_draw_h;
         *count = 1;
         return true;
     }
+
     if (strcmp(name, "dash_ox") == 0) {
         *values = dash_ox;
         *count = 1;
         return true;
     }
+
     if (strcmp(name, "dash_oy") == 0) {
         *values = dash_oy;
         *count = 1;
         return true;
     }
+
     return false;
 }
 
@@ -1175,101 +1237,121 @@ static bool tune_int_table(const char *name, int **values, int *count)
         *count = 6;
         return true;
     }
+
     if (strcmp(name, "idle_src_y") == 0) {
         *values = idle_src_y;
         *count = 6;
         return true;
     }
+
     if (strcmp(name, "idle_src_w") == 0) {
         *values = idle_src_w;
         *count = 6;
         return true;
     }
+
     if (strcmp(name, "idle_src_h") == 0) {
         *values = idle_src_h;
         *count = 6;
         return true;
     }
+
     if (strcmp(name, "walk_src_x") == 0) {
         *values = walk_src_x;
         *count = WALK_FRAME_COUNT;
         return true;
     }
+
     if (strcmp(name, "walk_src_y") == 0) {
         *values = walk_src_y;
         *count = WALK_FRAME_COUNT;
         return true;
     }
+
     if (strcmp(name, "walk_src_w") == 0) {
         *values = walk_src_w;
         *count = WALK_FRAME_COUNT;
         return true;
     }
+
     if (strcmp(name, "walk_src_h") == 0) {
         *values = walk_src_h;
         *count = WALK_FRAME_COUNT;
         return true;
     }
+
     if (strcmp(name, "jump_src_x") == 0) {
         *values = jump_src_x;
         *count = 4;
         return true;
     }
+
     if (strcmp(name, "jump_src_y") == 0) {
         *values = jump_src_y;
         *count = 4;
         return true;
     }
+
     if (strcmp(name, "jump_src_w") == 0) {
         *values = jump_src_w;
         *count = 4;
         return true;
     }
+
     if (strcmp(name, "jump_src_h") == 0) {
         *values = jump_src_h;
         *count = 4;
         return true;
     }
+
     if (strcmp(name, "slash_src_x") == 0) {
         *values = slash_src_x;
         *count = 4;
         return true;
     }
+
     if (strcmp(name, "slash_src_y") == 0) {
         *values = slash_src_y;
         *count = 4;
         return true;
     }
+
     if (strcmp(name, "slash_src_w") == 0) {
         *values = slash_src_w;
         *count = 4;
         return true;
     }
+
     if (strcmp(name, "slash_src_h") == 0) {
         *values = slash_src_h;
         *count = 4;
         return true;
     }
+
     if (strcmp(name, "dash_src_x") == 0) {
         *values = dash_src_x;
         *count = 1;
         return true;
     }
+
     if (strcmp(name, "dash_src_y") == 0) {
         *values = dash_src_y;
         *count = 1;
         return true;
     }
+
     if (strcmp(name, "dash_src_w") == 0) {
         *values = dash_src_w;
         *count = 1;
         return true;
     }
+
     if (strcmp(name, "dash_src_h") == 0) {
         *values = dash_src_h;
         *count = 1;
         return true;
     }
+
     return false;
 }
 
@@ -1343,6 +1425,7 @@ static bool save_tune_data(const char *path)
         fprintf(stderr, "Could not write tuning data to %s\n", path);
         return false;
     }
+
     write_tune_data_tables(out);
     fclose(out);
     fprintf(stderr, "Saved tuning data to %s\n", path);
@@ -1357,6 +1440,7 @@ static void load_tune_data(const char *path)
     if (!in) {
         return;
     }
+
     while (fgets(line, sizeof(line), in)) {
         char *token = strtok(line, " \t\r\n");
         char *count_token;
@@ -1367,10 +1451,12 @@ static void load_tune_data(const char *path)
         if (!token || token[0] == '#') {
             continue;
         }
+
         count_token = strtok(NULL, " \t\r\n");
         if (!count_token) {
             continue;
         }
+
         file_count = atoi(count_token);
         if (tune_float_table(token, &float_values, &table_count)) {
             int n = file_count < table_count ? file_count : table_count;
@@ -1379,6 +1465,7 @@ static void load_tune_data(const char *path)
                 if (!value) {
                     break;
                 }
+
                 float_values[i] = strtof(value, NULL);
                 loaded++;
             }
@@ -1389,6 +1476,7 @@ static void load_tune_data(const char *path)
                 if (!value) {
                     break;
                 }
+
                 int_values[i] = atoi(value);
                 loaded++;
             }
@@ -1471,6 +1559,7 @@ static bool export_tune_tables(const char *path)
         fprintf(stderr, "Could not write C tuning tables to %s\n", path);
         return false;
     }
+
     dump_tune_tables(out);
     fclose(out);
     fprintf(stderr, "Exported C tuning tables to %s\n", path);
@@ -1551,6 +1640,7 @@ static void tune_active_texture_size(int *texture_w, int *texture_h)
     } else if (tune_anim == TUNE_WALK && walk_texture.ready) {
         texture = &walk_texture;
     }
+
     *texture_w = texture->ready ? texture->w : 4096;
     *texture_h = texture->ready ? texture->h : 4096;
 }
@@ -1586,6 +1676,7 @@ static bool adjust_tune_source_edge(TrimEdge edge, int delta)
             if (base.x + next_x < 0 || next_w < 8 || base.x + next_x + next_w > texture_w) {
                 return false;
             }
+
             *src_x = next_x;
             *src_w = next_w;
             *draw_w = pixels_to_world * (float)next_w;
@@ -1598,6 +1689,7 @@ static bool adjust_tune_source_edge(TrimEdge edge, int delta)
             if (next_w < 8 || base.x + *src_x + next_w > texture_w) {
                 return false;
             }
+
             *src_w = next_w;
             *draw_w = pixels_to_world * (float)next_w;
             return true;
@@ -1609,6 +1701,7 @@ static bool adjust_tune_source_edge(TrimEdge edge, int delta)
             if (base.y + next_y < 0 || next_h < 8 || base.y + next_y + next_h > texture_h) {
                 return false;
             }
+
             *src_y = next_y;
             *src_h = next_h;
             *draw_h = pixels_to_world * (float)next_h;
@@ -1621,6 +1714,7 @@ static bool adjust_tune_source_edge(TrimEdge edge, int delta)
             if (next_h < 8 || base.y + *src_y + next_h > texture_h) {
                 return false;
             }
+
             *src_h = next_h;
             *draw_h = pixels_to_world * (float)next_h;
             return true;
@@ -1673,6 +1767,7 @@ static void draw_tune_player(void)
             if (idle_texture.ready) {
                 apply_source_crop(&src, idle_src_x[f], idle_src_y[f], idle_src_w[f], idle_src_h[f], texture->w, texture->h);
             }
+
             break;
         case TUNE_WALK:
             texture = walk_texture.ready ? &walk_texture : &player_texture;
@@ -1680,6 +1775,7 @@ static void draw_tune_player(void)
             if (walk_texture.ready) {
                 apply_source_crop(&src, walk_src_x[f], walk_src_y[f], walk_src_w[f], walk_src_h[f], texture->w, texture->h);
             }
+
             break;
         case TUNE_JUMP:
             src = HERO_JUMP_FRAMES[f];
@@ -1734,6 +1830,7 @@ static void draw_tune_overlay(void)
         snprintf(buffer, sizeof(buffer), "w %d/%d h %d/%d", *src_w, base_w, *src_h, base_h);
         draw_text(160, 18, buffer, (Color){ 176, 206, 190 });
     }
+
     draw_text(160, 32, tune_trim_mode ? "Arrows: trim edges" : "Arrows: nudge frame", (Color){ 205, 212, 218 });
     draw_text(160, 46, tune_trim_mode ? "Shift restore  Ctrl x4" : "1-5 anim  [/] frame", (Color){ 178, 187, 196 });
     snprintf(buffer, sizeof(buffer), "Mode T: %s", tune_trim_mode ? "trim" : "nudge");
@@ -1756,6 +1853,7 @@ static void draw_asset_background(void)
     if (visible_u > 1.0f) {
         visible_u = 1.0f;
     }
+
     float u0 = t * (1.0f - visible_u);
     float u1 = u0 + visible_u;
 
@@ -1830,6 +1928,7 @@ static void draw_tile(int tx, int ty)
                 src = FG_PLATFORM_R;
             }
         }
+
         float h = ground ? 18.0f : 16.0f;
         texture_src(&foreground_texture, src, x, y - 1, TILE, h, false);
         return;
@@ -1843,6 +1942,7 @@ static void draw_tile(int tx, int ty)
     if ((tx + ty) % 3 == 0) {
         rect_alpha(x + 3, y + 8, 7, 2, (Color){ 9, 11, 16 }, 190);
     }
+
     if ((tx * 7 + ty) % 5 == 0) {
         rect(x + 11, y + 5, 2, 2, (Color){ 101, 88, 72 });
     }
@@ -1855,9 +1955,11 @@ static void draw_map(void)
     if (first < 0) {
         first = 0;
     }
+
     if (last > MAP_W) {
         last = MAP_W;
     }
+
     for (int y = 0; y < MAP_H; ++y) {
         for (int x = first; x < last; ++x) {
             if (solid_at(x, y)) {
@@ -1916,6 +2018,7 @@ static void draw_foreground_details(void)
         if (x < camera_x - 24 || x > camera_x + VIEW_W + 24) {
             continue;
         }
+
         rect_alpha(x, 46, 5, 96, (Color){ 9, 12, 16 }, 170);
         rect_alpha(x - 8, 142, 21, 6, (Color){ 9, 12, 16 }, 190);
         for (int j = 0; j < 6; ++j) {
@@ -1928,6 +2031,7 @@ static void draw_foreground_details(void)
         if (x < camera_x - 44 || x > camera_x + VIEW_W + 44) {
             continue;
         }
+
         rect_alpha(x, 68, 22, 58, (Color){ 65, 19, 35 }, 210);
         tri(x, 126, x + 11, 138, x + 22, 126, (Color){ 65, 19, 35 });
         draw_cross(x + 7, 82, (Color){ 185, 136, 56 });
@@ -1941,11 +2045,13 @@ static void draw_relics(void)
         if (relics[i].taken) {
             continue;
         }
+
         float pulse = sinf(glutGet(GLUT_ELAPSED_TIME) * 0.006f + i) * 2.0f;
         if (foreground_texture.ready) {
             texture_src(&foreground_texture, FG_ALTAR, relics[i].x - 10, relics[i].y - 5 + pulse, 20, 25, false);
             continue;
         }
+
         rect(relics[i].x - 5, relics[i].y + pulse, 10, 14, (Color){ 108, 74, 40 });
         rect(relics[i].x - 3, relics[i].y + 2 + pulse, 6, 10, (Color){ 210, 158, 64 });
         draw_cross(relics[i].x - 4, relics[i].y + 1 + pulse, (Color){ 246, 225, 153 });
@@ -2001,9 +2107,11 @@ static void draw_player(void)
             if (f < 0) {
                 f = 0;
             }
+
             if (f > 3) {
                 f = 3;
             }
+
             src = HERO_SLASH_FRAMES[f];
             draw_texture = &player_texture;
             apply_runtime_source_crop(TUNE_SLASH, f, draw_texture, &src);
@@ -2030,6 +2138,7 @@ static void draw_player(void)
             } else {
                 f = 3;
             }
+
             src = HERO_JUMP_FRAMES[f];
             draw_texture = &player_texture;
             apply_runtime_source_crop(TUNE_JUMP, f, draw_texture, &src);
@@ -2067,6 +2176,7 @@ static void draw_player(void)
                 ox = fallback_walk_ox[f];
                 oy = 58.0f;
             }
+
             draw_y_offset = 0.0f;
         }
 
@@ -2114,10 +2224,12 @@ static void draw_candles(void)
         if (x < camera_x - 16 || x > camera_x + VIEW_W + 16) {
             continue;
         }
+
         if (foreground_texture.ready) {
             texture_src(&foreground_texture, (i % 3 == 0) ? FG_CANDELABRA : FG_CANDLES, x - 12, y - 34, 24, 36, false);
             continue;
         }
+
         rect(x, y - 10, 4, 10, (Color){ 219, 203, 168 });
         rect_alpha(x - 7, y - 20, 18, 22, (Color){ 241, 151, 51 }, 45);
         rect(x + 1, y - 14, 2, 4, (Color){ 244, 177, 61 });
@@ -2149,6 +2261,7 @@ static void draw_hud(void)
             glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *p);
         }
     }
+
     glPopMatrix();
 }
 
@@ -2158,6 +2271,7 @@ static void maybe_capture_frame(void)
     if (!path || captured_frame) {
         return;
     }
+
     if (capture_frame > 0 && sim_frame < capture_frame) {
         return;
     }
@@ -2178,6 +2292,7 @@ static void maybe_capture_frame(void)
         }
         fclose(fp);
     }
+
     free(pixels);
     captured_frame = true;
     if (capture_frame > 0) {
@@ -2199,6 +2314,7 @@ static void display(void)
         glutSwapBuffers();
         return;
     }
+
     if (isolate_player) {
         glTranslatef(130.0f - player.x, 132.0f - player.y, 0);
         draw_player();
@@ -2206,6 +2322,7 @@ static void display(void)
         glutSwapBuffers();
         return;
     }
+
     glTranslatef(-camera_x, 0, 0);
 
     draw_background();
@@ -2239,6 +2356,7 @@ static void tick(int value)
     if (frame > 0.08f) {
         frame = 0.08f;
     }
+
     last_time_ms = now;
     accumulator += frame;
 
@@ -2311,9 +2429,11 @@ static void key_down(unsigned char key, int x, int y)
         } else {
             keys[key] = true;
         }
+
         glutPostRedisplay();
         return;
     }
+
     keys[key] = true;
 }
 
@@ -2325,6 +2445,7 @@ static void key_up(unsigned char key, int x, int y)
         keys[key] = false;
         return;
     }
+
     keys[key] = false;
 }
 
@@ -2348,12 +2469,15 @@ static void special_down(int key, int x, int y)
         } else if (modifiers & GLUT_ACTIVE_CTRL) {
             step = 2.0f;
         }
+
         if (modifiers & GLUT_ACTIVE_CTRL) {
             trim_step = 4;
         }
+
         if (modifiers & GLUT_ACTIVE_SHIFT) {
             trim_step = -trim_step;
         }
+
         if (tune_trim_mode && key == GLUT_KEY_LEFT) {
             adjust_tune_source_edge(TRIM_LEFT, trim_step);
         } else if (tune_trim_mode && key == GLUT_KEY_RIGHT) {
@@ -2371,9 +2495,11 @@ static void special_down(int key, int x, int y)
         } else if (key == GLUT_KEY_DOWN) {
             *oy -= step;
         }
+
         glutPostRedisplay();
         return;
     }
+
     if (key >= 0 && key < 256) {
         special_keys[key] = true;
     }
@@ -2386,6 +2512,7 @@ static void special_up(int key, int x, int y)
     if (tune_mode) {
         return;
     }
+
     if (key >= 0 && key < 256) {
         special_keys[key] = false;
     }
@@ -2414,18 +2541,23 @@ int main(int argc, char **argv)
     if (!load_png_texture_keyed("assets/cathedral_background.png", &background_texture, false)) {
         fprintf(stderr, "Could not load assets/cathedral_background.png; using procedural fallback background.\n");
     }
+
     if (!load_png_texture_keyed("assets/midground_sheet_source.png", &midground_texture, true)) {
         fprintf(stderr, "Could not load assets/midground_sheet_source.png; skipping midground parallax.\n");
     }
+
     if (!load_png_texture_keyed("assets/foreground_sheet_source.png", &foreground_texture, true)) {
         fprintf(stderr, "Could not load assets/foreground_sheet_source.png; using procedural fallback props.\n");
     }
+
     if (!load_png_texture_keyed("assets/pilgrim_sheet_expanded_source.png", &player_texture, true)) {
         fprintf(stderr, "Could not load assets/pilgrim_sheet_expanded_source.png; using procedural fallback player.\n");
     }
+
     if (!load_png_texture_keyed("assets/pilgrim_idle_breath_source.png", &idle_texture, true)) {
         fprintf(stderr, "Could not load assets/pilgrim_idle_breath_source.png; using fallback idle frames.\n");
     }
+
     if (!load_png_texture_keyed("assets/pilgrim_walk_cycle_source.png", &walk_texture, true)) {
         fprintf(stderr, "Could not load assets/pilgrim_walk_cycle_source.png; using fallback walk frames.\n");
     }
@@ -2435,33 +2567,40 @@ int main(int argc, char **argv)
     if (tune_file_env && tune_file_env[0] != '\0') {
         tune_file_path = tune_file_env;
     }
+
     const char *tune_export_env = getenv("PILGRIM_TUNE_EXPORT");
     if (tune_export_env && tune_export_env[0] != '\0') {
         tune_export_path = tune_export_env;
     }
+
     load_tune_data(tune_file_path);
     capture_script = getenv("PILGRIM_SCRIPT");
     const char *capture_frame_env = getenv("PILGRIM_CAPTURE_FRAME");
     if (capture_frame_env) {
         capture_frame = atoi(capture_frame_env);
     }
+
     const char *forced_walk_env = getenv("PILGRIM_FORCE_WALK_FRAME");
     if (forced_walk_env) {
         forced_walk_frame = atoi(forced_walk_env);
     }
+
     const char *forced_idle_env = getenv("PILGRIM_FORCE_IDLE_FRAME");
     if (forced_idle_env) {
         forced_idle_frame = atoi(forced_idle_env);
     }
+
     const char *forced_jump_env = getenv("PILGRIM_FORCE_JUMP_FRAME");
     if (forced_jump_env) {
         forced_jump_frame = atoi(forced_jump_env);
     }
+
     const char *forced_facing_env = getenv("PILGRIM_FORCE_FACING");
     if (forced_facing_env) {
         forced_facing = atoi(forced_facing_env) < 0 ? -1 : 1;
         player.facing = forced_facing;
     }
+
     tune_mode = getenv("PILGRIM_TUNE") != NULL;
     if (tune_mode) {
         tune_anim = tune_anim_from_name(getenv("PILGRIM_TUNE_ANIM"));
@@ -2469,11 +2608,14 @@ int main(int argc, char **argv)
         if (tune_frame_env) {
             tune_frame = atoi(tune_frame_env);
         }
+
         if (tune_frame < 0) {
             tune_frame = 0;
         }
+
         tune_frame %= tune_frame_count(tune_anim);
     }
+
     isolate_player = getenv("PILGRIM_ISOLATE_PLAYER") != NULL;
     if (tune_mode) {
         player.x = 42.0f;
@@ -2483,6 +2625,7 @@ int main(int argc, char **argv)
         player.grounded = true;
         player.facing = forced_facing ? forced_facing : 1;
     }
+
     telemetry_path = getenv("PILGRIM_TELEMETRY");
     if (telemetry_path) {
         telemetry_file = fopen(telemetry_path, "w");
@@ -2491,6 +2634,7 @@ int main(int argc, char **argv)
             atexit(close_telemetry);
         }
     }
+
     last_time_ms = glutGet(GLUT_ELAPSED_TIME);
 
     glutDisplayFunc(display);
