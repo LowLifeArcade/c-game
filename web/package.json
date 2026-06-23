@@ -1,23 +1,29 @@
 {
-  "name": "pilgrim-of-the-thorn-web",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "npm run sync:assets && vite",
-    "build": "npm run sync:assets && tsc -b && vite build",
-    "preview": "vite preview",
-    "sync:assets": "node scripts/sync-assets.mjs",
-    "build:game": "cd .. && make package-macos",
-    "deploy": "npm run build:game && npm run build && wrangler deploy"
-  },
-  "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.13.8",
-    "@cloudflare/workers-types": "^4.20260620.0",
-    "@types/node": "^24.0.3",
-    "pngjs": "^7.0.0",
-    "typescript": "^5.8.3",
-    "vite": "^7.0.0",
-    "wrangler": "^4.21.0"
-  }
+    "name": "pilgrim-of-the-thorn-web",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "npm run sync:assets && vite",
+        "build": "npm run sync:assets && tsc -b && vite build",
+        "preview": "vite preview",
+        "sync:assets": "node scripts/sync-assets.mjs",
+        "types": "wrangler types --env-file .env.example --strict-vars false",
+        "db:migrate:local": "wrangler d1 migrations apply pilgrim-of-the-thorn-sales --local",
+        "db:migrate:remote": "wrangler d1 migrations apply pilgrim-of-the-thorn-sales --remote",
+        "build:game": "cd .. && make package-macos",
+        "deploy": "npm run build:game && npm run build && wrangler deploy"
+    },
+    "dependencies": {
+        "stripe": "^22.2.3"
+    },
+    "devDependencies": {
+        "@cloudflare/vite-plugin": "^1.13.8",
+        "@cloudflare/workers-types": "^4.20260620.0",
+        "@types/node": "^24.0.3",
+        "pngjs": "^7.0.0",
+        "typescript": "^5.8.3",
+        "vite": "^7.0.0",
+        "wrangler": "^4.21.0"
+    }
 }
