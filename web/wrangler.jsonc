@@ -1,41 +1,48 @@
 {
-    "$schema": "./node_modules/wrangler/config-schema.json",
-    "name": "pilgrim-of-the-thorn-web",
-    "compatibility_date": "2026-06-23",
-    "compatibility_flags": ["nodejs_compat"],
-    "main": "./worker/index.ts",
-    "assets": {
-        "not_found_handling": "single-page-application",
-        "run_worker_first": ["/api/*"],
-    },
-    "vars": {
-        "GAME_PRICE_CENTS": "1995",
-        "GAME_CURRENCY": "usd",
-        "PUBLIC_SITE_URL": "https://example.com",
-        "EMAIL_FROM": "orders@example.com",
-        "SUPPORT_EMAIL": "support@example.com",
-    },
-    "d1_databases": [
-        {
-            "binding": "DB",
-            "database_name": "pilgrim-of-the-thorn-sales",
-            "migrations_dir": "migrations",
-        },
-    ],
-    "send_email": [
-        {
-            "name": "EMAIL",
-            "allowed_sender_addresses": ["orders@example.com"],
-        },
-    ],
-    "observability": {
-        "enabled": true,
-        "logs": {
-            "head_sampling_rate": 1,
-        },
-        "traces": {
-            "enabled": true,
-            "head_sampling_rate": 0.01,
-        },
-    },
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "pilgrim-of-the-thorn-web",
+	"compatibility_date": "2026-06-23",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"main": "./worker/index.ts",
+	"assets": {
+		"not_found_handling": "single-page-application",
+		"run_worker_first": [
+			"/api/*"
+		],
+	},
+	"vars": {
+		"GAME_PRICE_CENTS": "1995",
+		"GAME_CURRENCY": "usd",
+		"PUBLIC_SITE_URL": "https://example.com",
+		"EMAIL_FROM": "orders@example.com",
+		"SUPPORT_EMAIL": "support@example.com",
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "pilgrim-of-the-thorn-sales",
+			"migrations_dir": "migrations",
+			"database_id": "d690c21a-e639-41be-b359-cd738ab00c7a",
+		},
+	],
+	"send_email": [
+		{
+			"name": "EMAIL",
+			"allowed_sender_addresses": [
+				"orders@example.com"
+			],
+		},
+	],
+	"observability": {
+		"enabled": true,
+		"logs": {
+			"head_sampling_rate": 1,
+		},
+		"traces": {
+			"enabled": true,
+			"head_sampling_rate": 0.01,
+		},
+	},
 }
