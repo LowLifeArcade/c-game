@@ -1,5 +1,5 @@
 APP := build/pilgrim
-SRC := src/main.c
+SRC := src/main.c src/animation_clips.c
 VERSION_FILE := VERSION
 VERSION := $(shell tr -d '[:space:]' < $(VERSION_FILE))
 
@@ -13,13 +13,13 @@ else
 	LDFLAGS := -lglut -lGL -lGLU -lm
 endif
 
-.PHONY: all run tune version package-macos check-animations analyze-walk observe-walk review-walk analyze-idle analyze-jump analyze-proportions clean
+.PHONY: all run tune version package-macos check-animations test-animation-clips analyze-walk observe-walk review-walk analyze-idle analyze-jump analyze-proportions clean
 
 all: $(APP)
 
 $(APP): $(SRC) $(VERSION_FILE)
 	@mkdir -p build
-	$(CC) $(CFLAGS) -DPILGRIM_VERSION=\"$(VERSION)\" $< -o $@ $(LDFLAGS)
+	$(CC) $(CFLAGS) -DPILGRIM_VERSION=\"$(VERSION)\" $(SRC) -o $@ $(LDFLAGS)
 
 run: $(APP)
 	./$(APP)
@@ -35,6 +35,10 @@ package-macos: $(APP)
 
 check-animations: $(APP)
 	./scripts/check_animations.sh
+
+test-animation-clips:
+	$(CC) $(CFLAGS) tests/animation_clips_test.c src/animation_clips.c -o /tmp/pilgrim-animation-clips-test
+	/tmp/pilgrim-animation-clips-test
 
 analyze-walk: $(APP)
 	./scripts/analyze_walk.sh

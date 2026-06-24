@@ -4,7 +4,7 @@ set -euo pipefail
 out_dir="${PILGRIM_WALK_ANALYSIS_DIR:-/tmp/pilgrim_walk_analysis}"
 mkdir -p "$out_dir"
 
-walk_frames="${PILGRIM_WALK_FRAMES:-4}"
+walk_frames="${PILGRIM_WALK_FRAMES:-$(python3 scripts/animation_clip_info.py walk frames)}"
 
 for facing in right left; do
   facing_value=1

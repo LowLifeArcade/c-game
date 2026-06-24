@@ -49,7 +49,8 @@ for idle_frame in 0 1 2 3 4 5; do
   PILGRIM_FORCE_FACING=-1 PILGRIM_FORCE_IDLE_FRAME="$idle_frame" capture "left_idle_breath_$idle_frame" idle 10
 done
 capture walk walk 95
-for walk_frame in 0 1 2 3; do
+walk_frames="${PILGRIM_WALK_FRAMES:-$(python3 scripts/animation_clip_info.py walk frames)}"
+for ((walk_frame = 0; walk_frame < walk_frames; walk_frame++)); do
   PILGRIM_FORCE_WALK_FRAME="$walk_frame" capture "walk_cycle_$walk_frame" walk 95
   PILGRIM_FORCE_FACING=-1 PILGRIM_FORCE_WALK_FRAME="$walk_frame" capture "left_walk_cycle_$walk_frame" walk 95
 done

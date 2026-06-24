@@ -4,7 +4,7 @@ set -euo pipefail
 out_dir="${PILGRIM_WALK_REVIEW_DIR:-/tmp/pilgrim_walk_review}"
 capture_dir="${PILGRIM_WALK_REVIEW_CAPTURE_DIR:-/tmp/pilgrim_walk_review_captures}"
 richter_sheet="${RICHTER_SHEET:-/Users/Sonny/Downloads/PlayStation - Castlevania_ Symphony of the Night - Playable Characters - Richter Belmont.png}"
-walk_frames="${PILGRIM_WALK_FRAMES:-4}"
+walk_frames="${PILGRIM_WALK_FRAMES:-$(python3 scripts/animation_clip_info.py walk frames)}"
 
 mkdir -p "$out_dir" "$capture_dir"
 

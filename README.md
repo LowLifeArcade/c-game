@@ -147,12 +147,13 @@ Run the game in tuning mode to adjust sprite placement while the actual movement
 make tune
 ```
 
-Tuning values load from `assets/pilgrim_tuning.txt`.
+Idle/dash tuning loads from `assets/pilgrim_tuning.txt`. Selectable walk, jump, and slash clips load from `assets/pilgrim_animation_clips.txt`.
 
 | Key                | Tuning action                           |
 | :----------------- | :-------------------------------------- |
 | `1`–`5`            | Select idle, walk, jump, slash, or dash |
 | `[` / `]`          | Select previous or next animation frame |
+| `,` / `.`          | Select previous or next clip for the animation |
 | Arrow keys         | Nudge the selected frame                |
 | `Shift` + arrows   | Fine 0.1-unit nudges                    |
 | `Control` + arrows | Coarse 2-unit nudges                    |
@@ -179,7 +180,23 @@ PILGRIM_TUNE_FRAME=0..N
 PILGRIM_FORCE_FACING=-1|1
 PILGRIM_TUNE_FILE=/path/to/pilgrim_tuning.txt
 PILGRIM_TUNE_EXPORT=/path/to/tables.c
+PILGRIM_ANIMATION_CLIPS=/path/to/animation_clips.txt
+PILGRIM_WALK_CLIP=pilgrim_walk_8_consistent
+PILGRIM_JUMP_CLIP=pilgrim_jump_4
+PILGRIM_SLASH_CLIP=pilgrim_slash_4
 ```
+
+### Swappable animation clips
+
+`assets/pilgrim_animation_clips.txt` is the animation manifest. Each clip declares:
+
+- Animation type (`walk`, `jump`, or `slash`)
+- A unique clip name and sprite-sheet path
+- Any frame count from 1–32
+- Seconds per frame
+- Per-frame source rectangle, crop, rendered size, and nudge offsets
+
+Add another `clip` and its `frame` rows to register a sheet. In the workbench, select the animation with `2`, `3`, or `4`, switch clips with `,` / `.`, navigate all of its frames with `[` / `]`, then press `S` to save the selected clip and edits. The `active` rows choose the normal runtime clips.
 
 ## Visual review tools
 
@@ -219,7 +236,10 @@ The runtime and website share the same source material:
 - `foreground_sheet_source.png` — foreground atlas, chroma-keyed at runtime
 - `pilgrim_sheet_expanded_source.png` — action-sheet fallback
 - `pilgrim_idle_breath_source.png` — six-frame planted breathing cycle
-- `pilgrim_walk_cycle_source.png` — four-frame authored walk cycle
+- `pilgrim_walk_cycle_source.png` — original four-frame walk clip
+- `pilgrim_walk_cycle_8_consistent_source.png` — active unified eight-frame walk clip
+- `pilgrim_walk_cycle_8_source.png` — previous mixed-rendering eight-frame clip
+- `pilgrim_animation_clips.txt` — selectable walk, jump, and slash clip definitions
 - `pilgrim_tuning.txt` — live placement and trim values
 
 Individual authored frames can be selected with `PILGRIM_FORCE_IDLE_FRAME`, `PILGRIM_FORCE_WALK_FRAME`, or `PILGRIM_FORCE_JUMP_FRAME`.

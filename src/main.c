@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "animation_clips.h"
+
 #ifndef PILGRIM_VERSION
 #define PILGRIM_VERSION "0.0.0-dev"
 #endif
@@ -286,6 +288,8 @@ static Texture player_texture;
 static Texture idle_texture;
 static Texture walk_texture;
 static Texture midground_texture;
+static Texture animation_clip_textures[ANIMATION_CLIP_MAX];
+static AnimationLibrary animation_library;
 static bool captured_frame;
 static bool player_interacted;
 static bool isolate_player;
@@ -295,6 +299,32 @@ static TuneAnim tune_anim = TUNE_IDLE;
 static int tune_frame;
 static const char *tune_file_path = "assets/pilgrim_tuning.txt";
 static const char *tune_export_path = "/tmp/pilgrim_tuning_tables.c";
+static const char *animation_clips_path = "assets/pilgrim_animation_clips.txt";
+
+static ClipAnim tune_clip_anim(TuneAnim anim)
+{
+    switch (anim) {
+        case TUNE_WALK: return CLIP_WALK;
+        case TUNE_JUMP: return CLIP_JUMP;
+        case TUNE_SLASH: return CLIP_SLASH;
+        case TUNE_DASH: return CLIP_DASH;
+        default: return CLIP_IDLE;
+    }
+}
+
+static AnimationClip *active_animation_clip(TuneAnim anim)
+{
+    if (anim != TUNE_WALK && anim != TUNE_JUMP && anim != TUNE_SLASH) return NULL;
+    return animation_library_active(&animation_library, tune_clip_anim(anim));
+}
+
+static Texture *animation_clip_texture(AnimationClip *clip)
+{
+    if (!clip) return NULL;
+    int index = (int)(clip - animation_library.clips);
+    if (index < 0 || index >= animation_library.clip_count) return NULL;
+    return &animation_clip_textures[index];
+}
 
 static void color(Color c)
 {
@@ -487,6 +517,29 @@ static bool load_png_texture_keyed(const char *path, Texture *texture, bool gree
     return false;
 }
 #endif
+
+static bool load_animation_library(void)
+{
+    for (int i = 0; i < ANIMATION_CLIP_MAX; ++i) {
+        if (animation_clip_textures[i].ready) {
+            glDeleteTextures(1, &animation_clip_textures[i].id);
+        }
+    }
+    memset(animation_clip_textures, 0, sizeof(animation_clip_textures));
+    if (!animation_library_load(&animation_library, animation_clips_path)) {
+        fprintf(stderr, "Could not load animation clips from %s\n", animation_clips_path);
+        return false;
+    }
+
+    for (int i = 0; i < animation_library.clip_count; ++i) {
+        if (!load_png_texture_keyed(animation_library.clips[i].sheet_path, &animation_clip_textures[i], true)) {
+            fprintf(stderr, "Could not load clip %s sheet %s\n",
+                animation_library.clips[i].name, animation_library.clips[i].sheet_path);
+        }
+    }
+    fprintf(stderr, "Loaded %d animation clips from %s\n", animation_library.clip_count, animation_clips_path);
+    return true;
+}
 
 static bool solid_at(int tx, int ty)
 {
@@ -759,7 +812,8 @@ static void update(float dt)
     }
 
     if (ad && !prev_attack_down && player.attack_timer <= 0.0f) {
-        player.attack_timer = 0.34f;
+        AnimationClip *slash_clip = active_animation_clip(TUNE_SLASH);
+        player.attack_timer = slash_clip ? slash_clip->frame_count * slash_clip->frame_seconds : 0.34f;
         player.attack_age = 0.0f;
         spawn_slash_sparks(player.x + 5.0f, player.y + 21.0f, player.facing);
     }
@@ -910,11 +964,10 @@ static void draw_text(float x, float y, const char *text, Color c)
 
 static int tune_frame_count(TuneAnim anim)
 {
+    AnimationClip *clip = active_animation_clip(anim);
+    if (clip) return clip->frame_count;
     switch (anim) {
         case TUNE_IDLE: return 6;
-        case TUNE_WALK: return WALK_FRAME_COUNT;
-        case TUNE_JUMP: return 4;
-        case TUNE_SLASH: return 4;
         case TUNE_DASH: return 1;
         default: return 1;
     }
@@ -964,6 +1017,14 @@ static TuneAnim tune_anim_from_name(const char *name)
 static void tune_active_pose(float **draw_w, float **draw_h, float **ox, float **oy)
 {
     int f = tune_frame % tune_frame_count(tune_anim);
+    AnimationClip *clip = active_animation_clip(tune_anim);
+    if (clip) {
+        *draw_w = &clip->frames[f].draw_w;
+        *draw_h = &clip->frames[f].draw_h;
+        *ox = &clip->frames[f].ox;
+        *oy = &clip->frames[f].oy;
+        return;
+    }
     switch (tune_anim) {
         case TUNE_IDLE:
             *draw_w = &idle_draw_w[f];
@@ -1006,6 +1067,11 @@ static void tune_active_pose(float **draw_w, float **draw_h, float **ox, float *
 
 static SrcRect tune_base_src_rect(TuneAnim anim, int frame)
 {
+    AnimationClip *clip = active_animation_clip(anim);
+    if (clip) {
+        AnimationFrame *f = &clip->frames[frame % clip->frame_count];
+        return (SrcRect){ f->x, f->y, f->w, f->h };
+    }
     switch (anim) {
         case TUNE_IDLE:
             return HERO_IDLE_BREATH_FRAMES[frame % 6];
@@ -1028,6 +1094,14 @@ static void tune_active_source(int **src_x, int **src_y, int **src_w, int **src_
     SrcRect base = tune_base_src_rect(tune_anim, f);
     *base_w = base.w;
     *base_h = base.h;
+    AnimationClip *clip = active_animation_clip(tune_anim);
+    if (clip) {
+        *src_x = &clip->frames[f].crop_x;
+        *src_y = &clip->frames[f].crop_y;
+        *src_w = &clip->frames[f].crop_w;
+        *src_h = &clip->frames[f].crop_h;
+        return;
+    }
     if (tune_anim == TUNE_IDLE) {
         *src_x = &idle_src_x[f];
         *src_y = &idle_src_y[f];
@@ -1569,6 +1643,11 @@ static bool export_tune_tables(const char *path)
 static void reset_tune_frame(void)
 {
     int f = tune_frame % tune_frame_count(tune_anim);
+    AnimationClip *clip = active_animation_clip(tune_anim);
+    if (clip) {
+        clip->frames[f] = clip->defaults[f];
+        return;
+    }
     switch (tune_anim) {
         case TUNE_IDLE:
             idle_draw_w[f] = DEFAULT_IDLE_DRAW_W[f];
@@ -1635,7 +1714,11 @@ typedef enum {
 static void tune_active_texture_size(int *texture_w, int *texture_h)
 {
     Texture *texture = &player_texture;
-    if (tune_anim == TUNE_IDLE && idle_texture.ready) {
+    AnimationClip *clip = active_animation_clip(tune_anim);
+    Texture *clip_texture = animation_clip_texture(clip);
+    if (clip_texture && clip_texture->ready) {
+        texture = clip_texture;
+    } else if (tune_anim == TUNE_IDLE && idle_texture.ready) {
         texture = &idle_texture;
     } else if (tune_anim == TUNE_WALK && walk_texture.ready) {
         texture = &walk_texture;
@@ -1728,6 +1811,12 @@ static void apply_runtime_source_crop(TuneAnim anim, int frame, Texture *texture
 {
     int texture_w = texture->ready ? texture->w : 4096;
     int texture_h = texture->ready ? texture->h : 4096;
+    AnimationClip *clip = active_animation_clip(anim);
+    if (clip) {
+        AnimationFrame *f = &clip->frames[frame % clip->frame_count];
+        apply_source_crop(src, f->crop_x, f->crop_y, f->crop_w, f->crop_h, texture_w, texture_h);
+        return;
+    }
     switch (anim) {
         case TUNE_IDLE:
             apply_source_crop(src, idle_src_x[frame % 6], idle_src_y[frame % 6], idle_src_w[frame % 6], idle_src_h[frame % 6], texture_w, texture_h);
@@ -1759,6 +1848,14 @@ static void draw_tune_player(void)
     float *ox;
     float *oy;
     tune_active_pose(&draw_w, &draw_h, &ox, &oy);
+    AnimationClip *clip = active_animation_clip(tune_anim);
+    Texture *clip_texture = animation_clip_texture(clip);
+    if (clip && clip_texture && clip_texture->ready) {
+        AnimationFrame *frame = &clip->frames[f];
+        texture = clip_texture;
+        src = (SrcRect){ frame->x, frame->y, frame->w, frame->h };
+        apply_source_crop(&src, frame->crop_x, frame->crop_y, frame->crop_w, frame->crop_h, texture->w, texture->h);
+    } else {
 
     switch (tune_anim) {
         case TUNE_IDLE:
@@ -1792,6 +1889,7 @@ static void draw_tune_player(void)
         default:
             break;
     }
+    }
 
     rect_alpha(player.x + 4.0f, player.y - 16.0f, 2.0f, 88.0f, (Color){ 85, 120, 155 }, 120);
     rect_alpha(player.x - 43.0f, player.y + 27.0f, 96.0f, 2.0f, (Color){ 155, 120, 85 }, 120);
@@ -1811,6 +1909,7 @@ static void draw_tune_overlay(void)
     int *src_h;
     int base_w;
     int base_h;
+    AnimationClip *clip = active_animation_clip(tune_anim);
     tune_active_pose(&draw_w, &draw_h, &ox, &oy);
     tune_active_source(&src_x, &src_y, &src_w, &src_h, &base_w, &base_h);
 
@@ -1835,8 +1934,13 @@ static void draw_tune_overlay(void)
     draw_text(160, 46, tune_trim_mode ? "Shift restore  Ctrl x4" : "1-5 anim  [/] frame", (Color){ 178, 187, 196 });
     snprintf(buffer, sizeof(buffer), "Mode T: %s", tune_trim_mode ? "trim" : "nudge");
     draw_text(160, 60, buffer, (Color){ 244, 224, 172 });
-    draw_text(160, 74, "Reset O  Save S  Load L", (Color){ 205, 212, 218 });
-    draw_text(160, 88, "Export P  Scale +/-  Size Z/X C/V", (Color){ 178, 187, 196 });
+    if (clip) {
+        snprintf(buffer, sizeof(buffer), "Clip ,/.: %s", clip->name);
+        draw_text(160, 74, buffer, (Color){ 205, 212, 218 });
+    } else {
+        draw_text(160, 74, "Reset O  Save S  Load L", (Color){ 205, 212, 218 });
+    }
+    draw_text(160, 88, clip ? "Reset O Save S Load L  Scale +/-" : "Export P  Scale +/-  Size Z/X C/V", (Color){ 178, 187, 196 });
     glPopMatrix();
 }
 
@@ -2068,6 +2172,25 @@ static void draw_lantern(float x, float y)
     line(x + 3, y - 2, x, y - 6, (Color){ 151, 127, 88 });
 }
 
+static bool select_clip_frame(TuneAnim anim, int frame_index, Texture **texture, SrcRect *src,
+    float *draw_w, float *draw_h, float *ox, float *oy)
+{
+    AnimationClip *clip = active_animation_clip(anim);
+    Texture *clip_texture = animation_clip_texture(clip);
+    if (!clip || !clip_texture || !clip_texture->ready) return false;
+    int f = frame_index % clip->frame_count;
+    if (f < 0) f += clip->frame_count;
+    AnimationFrame *frame = &clip->frames[f];
+    *texture = clip_texture;
+    *src = (SrcRect){ frame->x, frame->y, frame->w, frame->h };
+    apply_runtime_source_crop(anim, f, clip_texture, src);
+    *draw_w = frame->draw_w;
+    *draw_h = frame->draw_h;
+    *ox = frame->ox;
+    *oy = frame->oy;
+    return true;
+}
+
 static void draw_player(void)
 {
     float x = player.x;
@@ -2093,59 +2216,41 @@ static void draw_player(void)
         }
 
         if (forced_jump_frame >= 0) {
-            int f = forced_jump_frame % 4;
-            src = HERO_JUMP_FRAMES[f];
-            draw_texture = &player_texture;
-            apply_runtime_source_crop(TUNE_JUMP, f, draw_texture, &src);
-            draw_w = jump_draw_w[f];
-            draw_h = jump_draw_h[f];
-            ox = jump_ox[f];
-            oy = jump_oy[f];
+            select_clip_frame(TUNE_JUMP, forced_jump_frame, &draw_texture, &src, &draw_w, &draw_h, &ox, &oy);
             draw_y_offset = 0.0f;
         } else if (player.attack_timer > 0.0f) {
-            int f = (int)(player.attack_age / 0.085f);
+            AnimationClip *slash_clip = active_animation_clip(TUNE_SLASH);
+            float seconds = slash_clip ? slash_clip->frame_seconds : 0.085f;
+            int count = slash_clip ? slash_clip->frame_count : 4;
+            int f = (int)(player.attack_age / seconds);
             if (f < 0) {
                 f = 0;
             }
 
-            if (f > 3) {
-                f = 3;
+            if (f >= count) {
+                f = count - 1;
             }
 
-            src = HERO_SLASH_FRAMES[f];
-            draw_texture = &player_texture;
-            apply_runtime_source_crop(TUNE_SLASH, f, draw_texture, &src);
-            draw_w = slash_draw_w[f];
-            draw_h = slash_draw_h[f];
-            ox = slash_ox[f];
-            oy = slash_oy[f];
+            select_clip_frame(TUNE_SLASH, f, &draw_texture, &src, &draw_w, &draw_h, &ox, &oy);
             draw_y_offset = 0.0f;
         } else if (player.landing_timer > 0.0f) {
-            src = HERO_JUMP_FRAMES[3];
-            draw_texture = &player_texture;
-            apply_runtime_source_crop(TUNE_JUMP, 3, draw_texture, &src);
-            draw_w = jump_draw_w[3];
-            draw_h = jump_draw_h[3];
-            ox = jump_ox[3];
-            oy = jump_oy[3];
+            AnimationClip *jump_clip = active_animation_clip(TUNE_JUMP);
+            int landing_frame = jump_clip ? jump_clip->frame_count - 1 : 3;
+            select_clip_frame(TUNE_JUMP, landing_frame, &draw_texture, &src, &draw_w, &draw_h, &ox, &oy);
             draw_y_offset = 0.0f;
         } else if (!player.grounded) {
+            AnimationClip *jump_clip = active_animation_clip(TUNE_JUMP);
+            int count = jump_clip ? jump_clip->frame_count : 4;
             int f = 0;
             if (player.vy < -115.0f) {
-                f = player.air_time < 0.065f ? 0 : 1;
+                f = player.air_time < 0.065f ? 0 : count / 3;
             } else if (player.vy < 45.0f) {
-                f = 2;
+                f = (count * 2) / 3;
             } else {
-                f = 3;
+                f = count - 1;
             }
 
-            src = HERO_JUMP_FRAMES[f];
-            draw_texture = &player_texture;
-            apply_runtime_source_crop(TUNE_JUMP, f, draw_texture, &src);
-            draw_w = jump_draw_w[f];
-            draw_h = jump_draw_h[f];
-            ox = jump_ox[f];
-            oy = jump_oy[f];
+            select_clip_frame(TUNE_JUMP, f, &draw_texture, &src, &draw_w, &draw_h, &ox, &oy);
             draw_y_offset = 0.0f;
         } else if (player.backdash_timer > 0.0f) {
             src = HERO_JUMP_FRAMES[1];
@@ -2157,15 +2262,13 @@ static void draw_player(void)
             oy = dash_oy[0];
             draw_y_offset = 0.0f;
         } else if (fabsf(player.vx) > 8.0f) {
-            if (walk_texture.ready) {
-                int f = forced_walk_frame >= 0 ? forced_walk_frame % WALK_FRAME_COUNT : ((int)(player.anim_time / WALK_FRAME_SECONDS)) % WALK_FRAME_COUNT;
-                src = HERO_WALK_SMOOTH_FRAMES[f];
-                apply_runtime_source_crop(TUNE_WALK, f, &walk_texture, &src);
-                draw_w = walk_draw_w[f];
-                draw_h = walk_draw_h[f];
-                ox = walk_ox[f];
-                oy = walk_oy[f];
-                texture_src(&walk_texture, src, x + 5.0f - draw_ox_for_facing(draw_w, ox, player.facing), y + 28.0f - oy, draw_w, draw_h, player.facing < 0);
+            AnimationClip *walk_clip = active_animation_clip(TUNE_WALK);
+            Texture *walk_clip_texture = animation_clip_texture(walk_clip);
+            if (walk_clip && walk_clip_texture && walk_clip_texture->ready) {
+                int f = forced_walk_frame >= 0 ? forced_walk_frame % walk_clip->frame_count :
+                    ((int)(player.anim_time / walk_clip->frame_seconds)) % walk_clip->frame_count;
+                select_clip_frame(TUNE_WALK, f, &draw_texture, &src, &draw_w, &draw_h, &ox, &oy);
+                texture_src(draw_texture, src, x + 5.0f - draw_ox_for_facing(draw_w, ox, player.facing), y + 28.0f - oy, draw_w, draw_h, player.facing < 0);
                 return;
             } else {
                 int f = ((int)(player.anim_time / 0.125f)) % 6;
@@ -2399,6 +2502,14 @@ static void key_down(unsigned char key, int x, int y)
             tune_frame = (tune_frame + tune_frame_count(tune_anim) - 1) % tune_frame_count(tune_anim);
         } else if (key == ']') {
             tune_frame = (tune_frame + 1) % tune_frame_count(tune_anim);
+        } else if (key == ',' || key == '<') {
+            if (animation_library_cycle(&animation_library, tune_clip_anim(tune_anim), -1)) {
+                tune_frame = 0;
+            }
+        } else if (key == '.' || key == '>') {
+            if (animation_library_cycle(&animation_library, tune_clip_anim(tune_anim), 1)) {
+                tune_frame = 0;
+            }
         } else if (key == '=' || key == '+') {
             *draw_w += 0.5f;
             *draw_h += 0.5f;
@@ -2421,8 +2532,13 @@ static void key_down(unsigned char key, int x, int y)
             reset_tune_frame();
         } else if (key == 's' || key == 'S') {
             save_tune_data(tune_file_path);
+            if (!animation_library_save(&animation_library, animation_clips_path)) {
+                fprintf(stderr, "Could not save animation clips to %s\n", animation_clips_path);
+            }
         } else if (key == 'l' || key == 'L') {
             load_tune_data(tune_file_path);
+            load_animation_library();
+            tune_frame %= tune_frame_count(tune_anim);
         } else if (key == 'p' || key == 'P') {
             dump_tune_tables(stderr);
             export_tune_tables(tune_export_path);
@@ -2573,6 +2689,18 @@ int main(int argc, char **argv)
         tune_export_path = tune_export_env;
     }
 
+    const char *animation_clips_env = getenv("PILGRIM_ANIMATION_CLIPS");
+    if (animation_clips_env && animation_clips_env[0] != '\0') {
+        animation_clips_path = animation_clips_env;
+    }
+
+    load_animation_library();
+    const char *walk_clip_env = getenv("PILGRIM_WALK_CLIP");
+    const char *jump_clip_env = getenv("PILGRIM_JUMP_CLIP");
+    const char *slash_clip_env = getenv("PILGRIM_SLASH_CLIP");
+    if (walk_clip_env) animation_library_select(&animation_library, CLIP_WALK, walk_clip_env);
+    if (jump_clip_env) animation_library_select(&animation_library, CLIP_JUMP, jump_clip_env);
+    if (slash_clip_env) animation_library_select(&animation_library, CLIP_SLASH, slash_clip_env);
     load_tune_data(tune_file_path);
     capture_script = getenv("PILGRIM_SCRIPT");
     const char *capture_frame_env = getenv("PILGRIM_CAPTURE_FRAME");

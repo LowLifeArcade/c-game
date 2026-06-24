@@ -2,7 +2,7 @@
 set -euo pipefail
 
 out_dir="${PILGRIM_PROPORTION_ANALYSIS_DIR:-/tmp/pilgrim_proportion_analysis}"
-walk_frames="${PILGRIM_WALK_FRAMES:-4}"
+walk_frames="${PILGRIM_WALK_FRAMES:-$(python3 scripts/animation_clip_info.py walk frames)}"
 mkdir -p "$out_dir"
 
 capture() {

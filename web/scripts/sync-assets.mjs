@@ -8,6 +8,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const webRoot = resolve(here, '..');
 const gameRoot = resolve(webRoot, '..');
 const version = (await readFile(resolve(gameRoot, 'VERSION'), 'utf8')).trim();
+const animationManifest = await readFile(resolve(gameRoot, 'assets/pilgrim_animation_clips.txt'), 'utf8');
 
 if (!/^\d+\.\d+\.\d+(?:[+-][0-9A-Za-z.-]+)?$/.test(version)) {
     throw new Error(`Invalid semantic version in VERSION: ${version}`);
@@ -40,11 +41,27 @@ for (const [from, to] of copies) {
 }
 
 await chromaKeyGreen(
-    resolve(gameRoot, 'assets/pilgrim_walk_cycle_source.png'),
+    resolve(gameRoot, activeClipSheet(animationManifest, 'walk')),
     resolve(webRoot, 'public/art/pilgrim-walk-keyed.png'),
 );
 
 console.log(`Synced game art and macOS DMG v${version} into web/public.`);
+
+function activeClipSheet(manifest, animation) {
+    const clips = new Map();
+    const active = new Map();
+
+    for (const raw of manifest.split('\n')) {
+        const parts = raw.trim().split(/\s+/);
+        if (!parts[0] || parts[0].startsWith('#')) continue;
+        if (parts[0] === 'clip') clips.set(parts[2], { animation: parts[1], sheet: parts[3] });
+        if (parts[0] === 'active') active.set(parts[1], parts[2]);
+    }
+
+    const clip = clips.get(active.get(animation));
+    if (!clip || clip.animation !== animation) throw new Error(`No active ${animation} clip in animation manifest.`);
+    return clip.sheet;
+}
 
 async function chromaKeyGreen(source, target) {
     await mkdir(dirname(target), { recursive: true });
