@@ -42,7 +42,11 @@ function renderHomePage(): void {
               <span>Coming soon</span>
             </span>
           </div>
-          <p class="download-note">Free macOS demo · DMG version ${__PILGRIM_VERSION__}</p>
+          <p class="download-note">
+            Free macOS demo · DMG version ${__PILGRIM_VERSION__}<br />
+            First launch: if macOS blocks the demo, open System Settings → Privacy &amp; Security
+            and click Open Anyway.
+          </p>
         </div>
       </section>
 

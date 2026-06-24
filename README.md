@@ -77,6 +77,7 @@ Useful commands:
 ```sh
 make tune            # Run with the live animation-tuning overlay
 make package-macos   # Build a versioned app, DMG, and zip
+make package-macos-release # Optional: sign and notarize with an Apple Developer account
 ./build/pilgrim --version
 ```
 
@@ -88,6 +89,28 @@ Pilgrim-of-the-Thorn-macOS-app-v0.0.1.zip
 ```
 
 The semantic version lives in [`VERSION`](VERSION). Changing it rebuilds the executable and carries the same version into the app bundle, downloadable DMG, zip archive, and website.
+
+`make package-macos` creates an ad-hoc signed artifact that can be distributed without a paid Apple
+Developer account. On first launch, current macOS versions may require the user to open **System
+Settings → Privacy & Security** and click **Open Anyway**. The website deploy command uses this
+free distribution path.
+
+For a release that opens without that Gatekeeper override, `make package-macos-release` requires an
+Apple Developer Program membership, a **Developer ID Application** certificate installed in
+Keychain Access, and notarization credentials:
+
+```sh
+xcrun notarytool store-credentials "pilgrim-notary" \
+  --apple-id "you@example.com" \
+  --team-id "YOUR_TEAM_ID" \
+  --password "APP_SPECIFIC_PASSWORD"
+
+export PILGRIM_SIGN_IDENTITY="Developer ID Application: Your Name (YOUR_TEAM_ID)"
+export PILGRIM_NOTARY_PROFILE="pilgrim-notary"
+```
+
+With those optional credentials configured, run `make package-macos-release` before publishing the
+artifact. Normal `npm run deploy` does not require them.
 
 ### Linux
 

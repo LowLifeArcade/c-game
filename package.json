@@ -4,6 +4,7 @@
     "scripts": {
         "build": "make",
         "package:macos": "make package-macos",
+        "package:macos:release": "make package-macos-release",
         "deploy": "npm --prefix web run deploy"
     }
 }
