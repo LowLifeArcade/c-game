@@ -281,6 +281,65 @@ async function purchaseStatus(request: Request, env: Env): Promise<Response> {
     });
 }
 
+async function downloadGame(request: Request, env: Env): Promise<Response> {
+    const filename = `Pilgrim-of-the-Thorn-macOS-v${__PILGRIM_VERSION__}.dmg`;
+
+    if (request.method === 'HEAD') {
+        const object = await env.GAME_DOWNLOADS.head(filename);
+        if (!object) {
+            return json({ error: 'Download is not available yet.' }, { status: 404 });
+        }
+
+        const headers = downloadHeaders(object, filename);
+        headers.set('content-length', String(object.size));
+        return new Response(null, { headers });
+    }
+
+    const rangeHeader = request.headers.get('range');
+    const requestedRange = rangeHeader?.match(/^bytes=(\d*)-(\d*)$/);
+    const object = requestedRange
+        ? await env.GAME_DOWNLOADS.get(filename, { range: request.headers })
+        : await env.GAME_DOWNLOADS.get(filename);
+    if (!object) {
+        return json({ error: 'Download is not available yet.' }, { status: 404 });
+    }
+
+    const headers = downloadHeaders(object, filename);
+    let status = 200;
+    if (requestedRange) {
+        const [, startValue, endValue] = requestedRange;
+        let offset: number;
+        let end: number;
+        if (startValue) {
+            offset = Number(startValue);
+            end = endValue ? Math.min(Number(endValue), object.size - 1) : object.size - 1;
+        } else {
+            const suffixLength = Math.min(Number(endValue), object.size);
+            offset = object.size - suffixLength;
+            end = object.size - 1;
+        }
+
+        const length = end - offset + 1;
+        status = 206;
+        headers.set('content-range', `bytes ${offset}-${end}/${object.size}`);
+        headers.set('content-length', String(length));
+    } else {
+        headers.set('content-length', String(object.size));
+    }
+
+    return new Response(object.body, { status, headers });
+}
+
+function downloadHeaders(object: R2Object, filename: string): Headers {
+    const headers = new Headers();
+    object.writeHttpMetadata(headers);
+    headers.set('content-disposition', `attachment; filename="${filename}"`);
+    headers.set('etag', object.httpEtag);
+    headers.set('accept-ranges', 'bytes');
+    headers.set('x-content-type-options', 'nosniff');
+    return headers;
+}
+
 export default {
     async fetch(request, env): Promise<Response> {
         const url = new URL(request.url);
@@ -298,11 +357,8 @@ export default {
                 return await purchaseStatus(request, env);
             }
 
-            if (url.pathname === '/api/download' && request.method === 'GET') {
-                return Response.redirect(
-                    new URL(`/downloads/Pilgrim-of-the-Thorn-macOS-v${__PILGRIM_VERSION__}.dmg`, url.origin).toString(),
-                    302,
-                );
+            if (url.pathname === '/api/download' && (request.method === 'GET' || request.method === 'HEAD')) {
+                return await downloadGame(request, env);
             }
         } catch (error) {
             console.error(

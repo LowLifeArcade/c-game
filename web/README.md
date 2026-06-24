@@ -82,7 +82,30 @@ npx wrangler email sending dns get yourdomain.com
 
 Cloudflare will configure the required SPF and DKIM records. Add DMARC if the domain does not already have it.
 
-### 4. Generate binding types
+### 4. R2 game downloads
+
+The macOS DMG is stored in private R2 buckets and streamed through `/api/download`, so both
+deployments continue to use their normal `workers.dev` URLs:
+
+- `pilgrim-of-the-thorn-downloads-dev`
+- `pilgrim-of-the-thorn-downloads-prod`
+
+Upload the current version without deploying:
+
+```sh
+npm run build:game
+npm run r2:upload:dev
+npm run r2:upload:prod
+```
+
+For local testing, seed Wrangler's local R2 storage:
+
+```sh
+npm run build:game
+npm run r2:upload:local
+```
+
+### 5. Generate binding types
 
 ```sh
 npm run types
@@ -110,9 +133,11 @@ npm run types
 npm run db:migrate:local
 npm run dev
 npm run build
-npm run deploy
+npm run deploy:dev
+npm run deploy:prod
 ```
 
-`npm run deploy` rebuilds and packages the game, copies the versioned DMG and game art into `public/`, builds the Vite app, and deploys it with Wrangler.
+Both deploy commands package the game, upload the versioned DMG to the matching private R2 bucket,
+build the Vite app, and deploy it with Wrangler. `npm run deploy` is an alias for production.
 
 The ownership key is issued and stored, but the game does not validate it yet. Add an activation screen or ownership-key verification endpoint before relying on the key for access control.

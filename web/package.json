@@ -6,13 +6,19 @@
     "scripts": {
         "dev": "npm run sync:assets && vite",
         "build": "npm run sync:assets && tsc -b && vite build",
+        "build:dev": "CLOUDFLARE_ENV=dev npm run build",
         "preview": "vite preview",
         "sync:assets": "node scripts/sync-assets.mjs",
         "types": "wrangler types --env-file .env.example --strict-vars false",
         "db:migrate:local": "wrangler d1 migrations apply pilgrim-of-the-thorn-sales --local",
         "db:migrate:remote": "wrangler d1 migrations apply pilgrim-of-the-thorn-sales --remote",
         "build:game": "cd .. && make package-macos",
-        "deploy": "npm run build:game && npm run build && wrangler deploy"
+        "r2:upload:local": "node scripts/upload-download.mjs local",
+        "r2:upload:dev": "node scripts/upload-download.mjs dev",
+        "r2:upload:prod": "node scripts/upload-download.mjs prod",
+        "deploy": "npm run deploy:prod",
+        "deploy:dev": "npm run build:game && npm run build:dev && npm run r2:upload:dev && wrangler deploy",
+        "deploy:prod": "npm run build:game && npm run build && npm run r2:upload:prod && wrangler deploy"
     },
     "dependencies": {
         "stripe": "^22.2.3"

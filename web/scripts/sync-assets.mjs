@@ -18,10 +18,6 @@ const copies = [
     ['assets/cathedral_concept.png', 'public/art/cathedral-concept.png'],
     ['assets/cathedral_background.png', 'public/art/cathedral-background.png'],
     ['assets/pilgrim_idle_breath_source.png', 'public/art/pilgrim-idle.png'],
-    [
-        `dist/macos/Pilgrim-of-the-Thorn-macOS-v${version}.dmg`,
-        `public/downloads/Pilgrim-of-the-Thorn-macOS-v${version}.dmg`,
-    ],
 ];
 
 await rm(resolve(webRoot, 'public/downloads'), { recursive: true, force: true });
@@ -45,7 +41,7 @@ await chromaKeyGreen(
     resolve(webRoot, 'public/art/pilgrim-walk-keyed.png'),
 );
 
-console.log(`Synced game art and macOS DMG v${version} into web/public.`);
+console.log(`Synced game art v${version} into web/public.`);
 
 function activeClipSheet(manifest, animation) {
     const clips = new Map();

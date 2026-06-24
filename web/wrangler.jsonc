@@ -27,6 +27,12 @@
 			"database_id": "d690c21a-e639-41be-b359-cd738ab00c7a",
 		},
 	],
+	"r2_buckets": [
+		{
+			"binding": "GAME_DOWNLOADS",
+			"bucket_name": "pilgrim-of-the-thorn-downloads-prod",
+		},
+	],
 	"send_email": [
 		{
 			"name": "EMAIL",
@@ -35,6 +41,40 @@
 			],
 		},
 	],
+	"env": {
+		"dev": {
+			"name": "pilgrim-of-the-thorn-web-dev",
+			"vars": {
+				"GAME_PRICE_CENTS": "1995",
+				"GAME_CURRENCY": "usd",
+				"PUBLIC_SITE_URL": "https://example.com",
+				"EMAIL_FROM": "orders@example.com",
+				"SUPPORT_EMAIL": "support@example.com",
+			},
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "pilgrim-of-the-thorn-sales",
+					"migrations_dir": "migrations",
+					"database_id": "d690c21a-e639-41be-b359-cd738ab00c7a",
+				},
+			],
+			"r2_buckets": [
+				{
+					"binding": "GAME_DOWNLOADS",
+					"bucket_name": "pilgrim-of-the-thorn-downloads-dev",
+				},
+			],
+			"send_email": [
+				{
+					"name": "EMAIL",
+					"allowed_sender_addresses": [
+						"orders@example.com"
+					],
+				},
+			],
+		},
+	},
 	"observability": {
 		"enabled": true,
 		"logs": {
