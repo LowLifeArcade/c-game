@@ -17,6 +17,7 @@ const header = `
       <a href="/#world">World</a>
       <a href="/#combat">Combat</a>
       <a href="/#download">Demo</a>
+      <a href="https://github.com/LowLifeArcade/c-game" target="_blank" rel="noreferrer">GitHub</a>
       <span class="nav-coming-soon"><s>Purchase</s> · Coming soon</span>
     </nav>
   </header>
@@ -125,6 +126,12 @@ function renderHomePage(): void {
         </div>
         <div class="final-actions">
           <a class="download-button" href="/api/download?artifact=dmg">Download free demo</a>
+          <a
+            class="secondary-button"
+            href="https://github.com/LowLifeArcade/c-game"
+            target="_blank"
+            rel="noreferrer"
+          >View on GitHub</a>
           <span class="secondary-button coming-soon-button" aria-disabled="true">
             <s>Purchase</s>
             <span>Coming soon</span>
