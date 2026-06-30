@@ -125,7 +125,7 @@ async function claimEmailDelivery(sessionId: string, env: Env): Promise<SaleRow 
 
 async function sendOwnershipEmail(sale: SaleRow, sessionId: string, env: Env): Promise<void> {
     const safeKey = escapeHtml(sale.license_key);
-    const downloadUrl = new URL('/api/download', env.PUBLIC_SITE_URL).toString();
+    const downloadUrl = new URL('/api/download?artifact=dmg', env.PUBLIC_SITE_URL).toString();
     const safeDownloadUrl = escapeHtml(downloadUrl);
     const sendResult = await env.EMAIL.send({
         from: {
@@ -337,6 +337,7 @@ function downloadHeaders(object: R2Object, filename: string): Headers {
     headers.set('etag', object.httpEtag);
     headers.set('accept-ranges', 'bytes');
     headers.set('x-content-type-options', 'nosniff');
+    headers.set('cache-control', 'no-store');
     return headers;
 }
 

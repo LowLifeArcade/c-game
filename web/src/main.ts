@@ -36,7 +36,7 @@ function renderHomePage(): void {
             carrying prayer, relic, and blade into a city that has forgotten grace.
           </p>
           <div class="hero-actions" aria-label="Game actions">
-            <a class="download-button" href="/api/download">Download free demo</a>
+            <a class="download-button" href="/api/download?artifact=dmg">Download free demo</a>
             <span class="secondary-button coming-soon-button" aria-disabled="true">
               <s>Purchase</s>
               <span>Coming soon</span>
@@ -124,7 +124,7 @@ function renderHomePage(): void {
           <p>Begin the pilgrimage with the free Mac demo. The full game is coming soon.</p>
         </div>
         <div class="final-actions">
-          <a class="download-button" href="/api/download">Download free demo</a>
+          <a class="download-button" href="/api/download?artifact=dmg">Download free demo</a>
           <span class="secondary-button coming-soon-button" aria-disabled="true">
             <s>Purchase</s>
             <span>Coming soon</span>
