@@ -68,7 +68,18 @@ cc -std=c99 -Wall -Wextra -pedantic -O2 \
 chmod 755 "$APP_MACOS/pilgrim"
 
 cp -X "$ROOT_DIR/assets/"*.png "$APP_RESOURCES/assets/"
-cp -X "$ROOT_DIR/assets/pilgrim_tuning.txt" "$APP_RESOURCES/assets/"
+cp -X \
+  "$ROOT_DIR/assets/pilgrim_animation_clips.txt" \
+  "$ROOT_DIR/assets/pilgrim_tuning.txt" \
+  "$APP_RESOURCES/assets/"
+
+while read -r command _ _ sheet _; do
+  [[ "$command" == "clip" ]] || continue
+  if [[ ! -f "$APP_RESOURCES/$sheet" ]]; then
+    echo "Animation manifest references missing packaged sheet: $sheet" >&2
+    exit 1
+  fi
+done < "$APP_RESOURCES/assets/pilgrim_animation_clips.txt"
 
 mkdir -p "$ICONSET"
 sips -c 887 887 "$ROOT_DIR/assets/cathedral_concept.png" --out "$DIST_DIR/pilgrim_icon_base.png" >/dev/null
